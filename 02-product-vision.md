@@ -1081,12 +1081,18 @@ dans la signature et se Suffit à lui-même. Il n'a pas besoin d'être réexpliq
 chaque occurrence.
 
 Le mot « marketplace » est **interdit** pour désigner Kaji.com : ni dans
-l'interface, ni dans les titres, ni dans les e-mails. La règle est entièrement
-appliquée — la seule occurrence de la chaîne dans `src/` est dans une réalisation
-professionnelle d'un candidat du vivier de démonstration
-(`src/lib/mock/talents.ts` : « Développement d'une marketplace à 4 000 commandes
-par mois »), ce qui est correct : un candidat peut avoir construit une place de
-marché.
+l'interface, ni dans les titres, ni dans les e-mails. Deux usages légitimes
+subsistent dans `src/`, tous deux désignant autre chose qu'à Kaji :
+
+1. `src/lib/mock/talents.ts` — une réalisation professionnelle d'un candidat du
+   vivier de démonstration : « Développement d'une marketplace à 4 000 commandes
+   par mois ». Un candidat peut avoir construit une place de marché.
+2. `src/app/a-propos/page.tsx` — la page qui **explique** l'interdiction au
+   visiteur, en le renvoyant à ce premier cas.
+
+Aucune occurrence ne désigne Kaji.com. C'est la règle à vérifier, pas
+l'absence du mot : une page d'interdiction doit pouvoir nommer ce qu'elle
+interdit.
 
 Dans les documents internes, le terme reste autorisé pour expliquer la raison de
 l'interdiction, comme ici.

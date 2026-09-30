@@ -52,7 +52,7 @@ export const FOOTER_NAV: readonly NavSection[] = [
     title: "Entreprises",
     links: [
       { href: "/entreprise/inscription", label: "Créer un compte entreprise" },
-      { href: "/entreprise/demandes", label: "Déposer un besoin" },
+      { href: "/contact?objet=besoin", label: "Déposer un besoin" },
       { href: "/entreprises", label: "Confier un recrutement" },
     ],
   },
@@ -61,7 +61,7 @@ export const FOOTER_NAV: readonly NavSection[] = [
     links: [
       { href: "/a-propos", label: "À propos" },
       { href: "/contact", label: "Nous contacter" },
-      { href: "/talents", label: "Comment ça marche" },
+      { href: "/a-propos#processus", label: "Comment ça marche" },
     ],
   },
 ];

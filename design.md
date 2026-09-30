@@ -28,15 +28,15 @@ est annoncé honnêtement par `PlaceholderPage`.
 | `EC-02` | Annuaire des talents | `/talents` | **Livré** | Dynamique (`searchParams`) |
 | `EC-03` | Fiche publique talent | `/talents/[id]` | **Livré** | Dynamique, vrai 404 |
 | `EC-04` | 404 | `not-found.tsx` | **Livré** | Ne dépend d'aucune donnée |
-| `EC-05` | À propos | `/a-propos` | Placeholder | Institutionnel |
+| `EC-05` | À propos | `/a-propos` | **Livré** | Contenu éditorial, `index: true` |
 | `EC-06` | Créer mon profil | `/candidats` | Placeholder | **Parcours candidat, étape 2** |
-| `EC-07` | Opportunités | `/opportunites` | Placeholder | Hors MVP |
-| `EC-08` | Entreprises | `/entreprises` | Placeholder | Entrée du parcours entreprise |
+| `EC-07` | Opportunités | `/opportunites` | **Livré** | Annonce l'absence d'opportunités, `noindex` |
+| `EC-08` | Entreprises | `/entreprises` | **Livré** | Entrée du parcours entreprise vers `EC-11` |
 | `EC-09` | Créer un compte entreprise | `/entreprise/inscription` | Placeholder | **Parcours entreprise, étape 2** |
 | `EC-10` | Mes demandes de recrutement | `/entreprise/demandes` | Placeholder | Espace authentifié |
-| `EC-11` | Contact / demande de profil | `/contact` | Placeholder | **Blocage fonctionnel principal** |
-| `EC-12` | Mentions légales | `/mentions-legales` | Placeholder | **Bloquant production** |
-| `EC-13` | Politique de confidentialité | `/confidentialite` | Placeholder | **Bloquant production** |
+| `EC-11` | Contact / demande de profil | `/contact` | **Livré, livraison non branchée** | Formulaire validé ; transport absent |
+| `EC-12` | Mentions légales | `/mentions-legales` | **Livré, mentions incomplètes** | `index: true` ; 24 champs à renseigner |
+| `EC-13` | Politique de confidentialité | `/confidentialite` | **Livré** | `index: true` ; aligné sur le code réel |
 
 ### 60.2 Écrans non cartographiés
 
@@ -398,6 +398,11 @@ Non constructible avant l'authentification **et** la persistance.
 
 ### 64.5 EC-11 — Contact et demande de profil
 
+> **État : livré le 2026-03-15, livraison non branchée.** Le formulaire existe,
+> est validé et affiche honnêtement qu'aucun canal n'est configuré. Les
+> constats ci-dessous décrivent l'état *avant* livraison ; ils sont conservés
+> pour tracer ce que la page doit garantir.
+
 **Le blocage fonctionnel principal.** La page est un `PlaceholderPage` : un
 visiteur qui veut agir ne peut pas.
 
@@ -441,13 +446,22 @@ profil », jamais « publier une annonce ».
 obligations d'information doivent être publiées avant l'ouverture des comptes
 (§39.4).
 
-Les deux pages sont en `PlaceholderPage`, qui déclare
+> **État : livrées le 2026-03-15**, avec `robots: { index: true, follow: true }`.
+> `placeholderMetadata()` n'est plus utilisé sur ces deux routes.
+
+Les deux pages étaient en `PlaceholderPage`, qui déclare
 `robots: { index: false, follow: true }`. C'est le bon comportement pour un
-placeholder ; il faudra lever `index: false` quand le contenu réel sera livré.
+placeholder ; `index: false` a été levé à la livraison.
 
 `placeholderMetadata()` impose le `noindex` à toutes les pages placeholder. Ne pas
 l'oublier à l'inverse : une page légale réelle **doit** être indexable, sinon elle
 n'est pas opposable.
+
+**Ce qui reste bloquant :** les mentions obligatoires sont inconnues de
+l'opérateur (siège, RCCM, capital, directeur de publication, contacts,
+hébergeur). Elles sont affichées « à compléter » via `src/lib/legal.ts` plutôt
+qu'inventées, conformément à `02` §27.4.3. La page est rédigée, pas
+conforme.
 
 ---
 
@@ -477,11 +491,12 @@ EC-02 /talents             Filtrer le vivier
       ↓
 EC-03 /talents/:id         Fiche publique
       ↓
-EC-11 /contact?objet=…     Demander ce profil              ← BLOQUÉ
+EC-11 /contact?objet=…     Demander ce profil        ← formulaire livré
 ```
 
 Le second chemin va plus loin : l'entreprise peut lire, décider qu'un profil
-l'intéresse et tenter de le demander. Elle s'arrête au formulaire.
+l'intéresse et le demander. Le formulaire est désormais construit et
+pré-rempli ; il s'arrête là où commence l'étape 5, faute de transport.
 
 **Depuis l'accueil**, l'entreprise dispose de sa propre entrée : le hero porte
 « Je cherche un talent » en secondaire, avant « Créer mon profil ». L'accueil et
@@ -561,19 +576,24 @@ construit.
 
 | Rupture | Effet | Priorité |
 |---|---|---|
-| `EC-11` est un placeholder | Aucun parcours ne va au bout ; la seule conversion réelle est coupée | **Critique** |
 | `EC-09` est un placeholder | « Je cherche un talent », entrée principale de l'entreprise sur l'accueil et dans l'en-tête, mène à une page vide | **Critique** |
-| `EC-12` / `EC-13` placeholders | Pas d'ouverture de comptes possible | **Critique** |
 | Pas d'authentification | `EC-06`, `EC-09`, `EC-10` non constructibles | Critique |
 | Pas de persistance | Aucune écriture possible | Critique |
-| Pré-remplissage de `EC-11` ignoré | La demande depuis `EC-03` perd le `candidateId` et le contexte | Élevé |
+| `EC-11` sans transport | Le formulaire est là, mais la demande n'atteint personne. La page l'affiche ; l'étape 5 doit fournir la persistance et le canal | **Critique** |
+| `EC-12` mentions incomplètes | Page rédigée et indexable, mais non conforme : 24 mentions obligatoires manquent | Élevé |
 | Vide indistingué dans `EC-02` | Un visiteur sans résultat ne sait pas pourquoi | Moyen |
 | Badge « Vérifié » sans source dans `EC-03` | La donnée `isVerified` existe, mais aucun workflow ne la produit (`verify.ts` absent) | Moyen |
 | `verificationStatus` non projeté | L'écart vérifié / déclaré est invisible | Moyen |
 
-Les quatre premières lignes sont les seules qui empêchent le site de fonctionner.
-Elles ne dépendent d'aucune décision de design : elles dépendent de pages à
-écrire et d'une infrastructure à brancher.
+Résolues depuis la dernière révision : `EC-11` n'est plus un placeholder, son
+pré-remplissage fonctionne (objet, `candidateId` et nom du profil sont
+affichés), et `EC-12` / `EC-13` sont rédigées et indexables.
+
+Les cinq premières lignes sont celles qui empêchent encore le site de
+fonctionner. Trois dépendent de l'étape 5 — authentification, persistance,
+transport — et une dépend de l'opérateur : les mentions légales.
+
+Le vide indistingué dans `EC-02` a également été traité (étape 3).
 
 ### 65.6 Règle de conception des parcours
 

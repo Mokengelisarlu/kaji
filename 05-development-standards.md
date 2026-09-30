@@ -247,14 +247,23 @@ Le dépôt compte **deux** fichiers `"use client"` : `site-header-nav.tsx` et
 
 ### 49.1 État actuel
 
-**Aucune Server Action n'existe.** Aucun `"use server"` dans le dépôt. Les seules
-mutations possibles aujourd'hui sont les filtres en `GET` et le formulaire de
-contact, qui ne soumet rien.
+Une Server Action existe : `app/contact/actions.ts` (`submitContactRequest`),
+introduite avec `EC-11`.
 
-### 49.2 Règles pour le futur
+Elle ne **transmet** rien. Le dépôt d'un besoin et la demande de profil
+exigent un accusé de réception, or aucun canal n'est configuré. L'action
+renvoie donc `unconfigured` et l'interface l'affiche. C'est délibéré : un
+accusé de réception sans destinataire serait un mensonge présenté à
+l'utilisateur, et la demande serait perdue de toute façon.
+
+### 49.2 Règles
 
 1. `"use server"` en tête de fichier. Un fichier d'actions ne contient **que**
    des actions exportées — pas de composant, pas de helper non exporté.
+   Un module `"use server"` n'exporte que des fonctions **asynchrones** : toute
+   logique synchrone vit dans `src/lib/`, où elle reste testable sans serveur.
+   C'est le cas de `summariseContactRequest`, qui vit dans
+   `validation/contact.ts` et non dans `actions.ts`.
 2. **Les arguments sont sérialisables** : `string`, `number`, `boolean`, `Date`,
    `FormData`, objets simples. Aucune fonction, aucun composant.
 3. **Une action est un point d'entrée public.** Tout ce qui y entre est non
@@ -263,9 +272,16 @@ contact, qui ne soumet rien.
 4. **Ordre imposé** (`03-system-architecture.md` §28.3) : lire la session →
    résoudre le rôle → valider → autoriser → appliquer la transition → écrire →
    journaliser → revalider.
-5. **Retour structuré** : `{ ok: true, data }` ou `{ ok: false, error }`, jamais
-   une exception, jamais un `any`.
-6. **`updateTag(...)`** dans l'action elle-même pour le read-your-own-writes ;
+5. **Retour structuré** : jamais une exception, jamais un `any`. `EC-11` utilise
+   une union discriminée (`idle`, `invalid`, `accepted`, `unconfigured`,
+   `deliveryFailed`) consommée par `useActionState`, ce qui rend chaque état
+   exhaustif côté interface.
+6. **La logique pure est séparée de l'action et le transport est injecté.**
+   `lib/use-cases/contact.ts` expose `evaluateContactSubmission(formData,
+   transport)`. L'action se limite à injecter le transport configuré. Bénéfice
+   direct : la garantie « jamais `accepted` sans transport » se teste aujourd'hui
+   (`contact.test.ts`), alors qu'aucun service d'envoi n'existe.
+7. **`updateTag(...)`** dans l'action elle-même pour le read-your-own-writes ;
    `revalidateTag(tag, "max")` pour un contenu tolérant au retard.
 7. **`redirect()` en fin d'action**, jamais pendant un rendu.
 
@@ -300,6 +316,7 @@ dans un composant.
 |---|---|---|
 | `validation/candidate-id.ts` | `CANDIDATE_ID_PATTERN` + `CANDIDATE_ID_MAX_LENGTH` | existant |
 | `validation/talent-filters.ts` | schéma Zod des paramètres de l'annuaire | existant |
+| `validation/contact.ts` | schémas Zod du dépôt de besoin et de la demande de profil | existant |
 
 `CANDIDATE_ID_PATTERN` = `/^KJ-\d{4}-\d{4}$/`, longueur maximale 12. Volontairement
 strict et ancré : un identifiant malformé ne doit pas atteindre la couche
@@ -320,6 +337,28 @@ et de format.
 
 Les `filterIssues` sont affichés via `Alert tone="warning"`. Un filtre ignoré est
 dit à l'utilisateur, pas silencieusement avalé.
+
+`contactSchema` (`EC-11`) :
+
+1. est un `z.discriminatedUnion("subject", …)` : l'objet `besoin` et l'objet
+   `demande-profil` ont des champs différents, et le discriminant évite qu'une
+   erreur de l'un soit signalée dans l'autre ;
+2. porte les règles **transverses** dans un `superRefine` posé sur l'union, pas
+   sur chaque forme.
+
+> **Piège vérifié en développement.** Un `superRefine` posé sur une forme
+> n'est **pas exécuté** par `z.discriminatedUnion`, qui ne connaît que la forme
+> brute. Les règles atterrissaient donc sur un schéma qui passait ses tests et
+> n'était jamais appliqué en production — exactement le genre de dette que
+> `04` §44 et `06` §4 condemnent. Quand une règle porte sur deux champs, la
+> poser sur le schéma composite.
+
+3. valide le format de `candidateId` sans prétendre le résoudre : la page
+   (`app/contact/page.tsx`) appelle `getTalentProfile()` et renvoie 404 si le
+   profil n'existe pas. Une URL porteuse d'un identifiant métier est traitée
+   comme non fiable jusqu'à résolution.
+
+Les deux schémas sont couverts par `contact.test.ts` (27 cas).
 
 ### 50.4 Interdit
 

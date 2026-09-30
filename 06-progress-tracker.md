@@ -81,17 +81,29 @@ Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non c
 
 ### Phase 2 — À livrer avant la production
 
-- [ ] **M7 — Pages légales et institutionnelles**
-  `/mentions-legales`, `/confidentialite`, `/a-propos`, `/candidats`,
-  `/entreprises`, `/opportunites`, `/entreprise/inscription`,
-  `/entreprise/demandes` : toutes en `PlaceholderPage`.
-  **Bloquant** : les obligations d'information doivent être publiées avant
-  l'ouverture des comptes (§39.4).
+- [x] **M7 — Pages légales et institutionnelles** — *partiellement livré*
+  Livré : `/mentions-legales`, `/confidentialite` (en `index: true`),
+  `/a-propos`, `/entreprises`, `/opportunites`.
+  Restent en `PlaceholderPage` : `/candidats`, `/entreprise/inscription`,
+  `/entreprise/demandes` — les deux derniers supposent l'authentification et la
+  persistance de l'étape 5, pas une rédaction.
+  Les mentions obligatoires sont **rendues visibles comme manquantes** via
+  `src/lib/legal.ts` (24 champs « à compléter »), et non inventées : siège,
+  RCCM, capital, directeur de publication, contacts, hébergeur. La page est
+  donc rédigée mais **non conforme** tant que l'opérateur ne les renseigne pas.
+  Le pied de page « Déposer un besoin » pointe désormais sur `/contact` plutôt
+  que sur l'espace entreprise non fonctionnel.
 
-- [ ] **M8 — Contact / demande de profil** (`/contact`)
-  Le CTA est actif et mène à la page, mais le formulaire n'existe pas. C'est le
-  **blocage fonctionnel principal** : sans lui, un visiteur ne peut pas déclencher
-  le parcours de médiation.
+- [x] **M8 — Contact / demande de profil** (`/contact`) — *formulaire livré, livraison non branchée*
+  Le formulaire existe et est validé (`src/lib/validation/contact.ts`, 27 tests) :
+  dépôt d'un besoin et demande de profil, avec le pré-remplissage
+  `?objet=demande-profil&candidat=<candidateId>` produit par `EC-03` — objet,
+  identifiant et nom du profil sont effectivement affichés.
+  **Aucun canal de livraison n'est configuré.** La soumission renvoie donc
+  `unconfigured` et l'interface l'affiche : aucune confirmation d'envoi n'est
+  montrée, ce qui serait un mensonge puisque l'étape 5 doit encore apporter la
+  persistance et les notifications. Un `?objet` inconnu retombe sur le dépôt de
+  besoin ; une demande de profil sans `candidateId` valide renvoie 404.
 
 ### Phase 3 — Hors MVP, spécifié non implémenté
 
@@ -150,7 +162,7 @@ Repris de `03-system-architecture.md` §39.5, avec le statut réel.
 | Aucun rate limiting | Élevé | Non traité | Limiteur sur les routes d'écriture et les formulaires |
 | Aucun en-tête CSP | Moyen | Non traité | CSP + `nosniff` + `DENY` en production |
 | Aucune table d'audit | Moyen | Non traité | `audit_event` créée et alimentée |
-| Pages légales en placeholder | **Bloquant production** | Non traité | M7 livré |
+| Pages légales en placeholder | **Bloquant production** | Partiellement traité | Pages rédigées et indexables, mais 24 mentions obligatoires restent à renseigner par l'opérateur |
 | Formulaire de contact absent | **Bloquant fonctionnel** | Non traité | M8 livré |
 | `framer-motion` inutilisé | Faible | À nettoyer | Dépendance supprimée ou besoin identifié |
 | Assets `create-next-app` non utilisés | Faible | À nettoyer | `public/*.svg` supprimés |
@@ -182,6 +194,9 @@ Découverts pendant la rédaction des documents, vérifiés dans le code.
 | 12 | `hero01.png` fait 1,8 Mo en PNG sans perte pour un hero rendu à 464 px de large maximum (source 1199 × 1312) | `assets/hero01.png` | **Non fait, faute d'outil** : ni `cwebp`, ni ImageMagick, ni `sharp` dans le dépôt. `next/image` sert une variante WebP/AVIF redimensionnée au navigateur, donc le coût pour le visiteur est maîtrisé ; le coût restant est le poids du dépôt et le temps d'optimisation au build. Re-exporter en WebP à la source, ou ajouter `sharp` comme dépendance de développement |
 | 13 | La validation de `searchParams` est globale et non par champ : un seul paramètre fautif (`?sort=inconnu`) vide **tous** les filtres, y compris une catégorie valide. Comportement conforme au commentaire du module, mais l'utilisateur perd son filtre métier sans que l'interface le dise | `lib/validation/talent-filters.ts:130` | Décider : validation par champ avec fusion des valeurs valides, ou affichage explicite de l'avertissement déjà produit par `issues`. Verrouillé par un test dans `talent-filters.test.ts` |
 | 14 | `AvailabilityInput.lastAvailabilityConfirmationAt` est déclaré et documenté, mais jamais lu : la disponibilité effective se fonde sur la seule mise à jour du profil. `freshness.ts:22` affirme que `resolveEffectiveAvailability` traite ce champ séparément — il ne le fait pas | `lib/domain/availability.ts:24` | Soit l'utiliser comme seconde source de fraîcheur, soit le retirer du type et corriger le commentaire. Une reconfirmation explicite plus récente que la mise à jour du profil n'a aujourd'hui aucun effet |
+| 15 | Les mentions légales obligatoires sont inconnues (siège, RCCM, capital, directeur de publication, contacts, hébergeur) : `/mentions-legales` les affiche donc comme « à compléter » | `src/lib/legal.ts`, `app/mentions-legales/page.tsx` | **Bloquant production**. Renseigner `OPERATOR` ; `PENDING_LEGAL_FIELDS` est exporté pour que la liste vide soit vérifiable. Une mention inventée engagerait une entité réelle (`02` §27.4.3), d'où l'affichage explicite plutôt qu'une valeur plausible |
+| 16 | `/contact` valide et affiche la demande mais ne la livre à personne : aucun transport n'est configuré, donc la soumission renvoie `unconfigured` | `lib/use-cases/contact.ts`, `app/contact/actions.ts` | **Bloquant fonctionnel**. Remplacer `unconfiguredTransport` par un transport réel (étape 5 : persistance + notifications). Tant que ce n'est pas fait, aucune confirmation d'envoi n'est affichée — c'est délibéré : un accusé de réception sans destinataire serait un mensonge |
+| 17 | `/opportunites` est en `noindex` : elle ne décrit que des catégories et l'absence d'opportunités publiées | `app/opportunites/page.tsx` | Passer en `index: true` quand de vraies opportunités existent. Tant que la page annonce une absence, l'indexer n'apporte rien et occupe un emplacement de résultats sur une promesse non tenue |
 
 Les écarts 7, 9, 10 et 11 ont été corrigés le jour de la refonte de l'accueil.
 Ils formaient une seule famille : **des promesses publiques que le code ne peut
