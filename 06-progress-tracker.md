@@ -1,0 +1,294 @@
+# 06 — Progress tracker
+
+> Source unique de l'avancement réel. Un jalon n'est marqué `[x]` que s'il est
+> vérifiable dans le code. Une intention n'est pas une livraison.
+>
+> **Dernière validation** : `pnpm check` (lint + typecheck + build) réussi,
+> Next.js 16.3.6, 13 routes — 11 statiques, 2 dynamiques.
+>
+> Documents liés : `02-product-vision.md` §21 (périmètre MVP),
+> `03-system-architecture.md` §39.5 (risques ouverts),
+> `05-development-standards.md` §58 (état des tests).
+
+---
+
+## 1. État du dépôt
+
+| Élément | Valeur |
+|---|---|
+| Framework | Next.js 16.3.6 (App Router, Turbopack) |
+| React | 19.2.8 |
+| Langage | TypeScript 5, `strict`, `noUncheckedIndexedAccess` |
+| Style | Tailwind CSS v4 (`@theme` dans `globals.css`) |
+| Paquet | pnpm 11.13.1 |
+| Fichiers source | 56 fichiers `.ts` / `.tsx` |
+| Volume source | ~6 200 lignes |
+| Routes | 13 (12 fichiers de page + `/_not-found` ; 11 statiques, 2 dynamiques) |
+| Commits git | **0** — le dépôt n'a pas d'historique |
+| Tests | **0** — aucun runner installé |
+| Base de données | Aucune — `MockTalentRepository` en mémoire |
+| Authentification | Aucune |
+
+### Validation
+
+```bash
+pnpm lint        # eslint                       → 0 erreur
+pnpm typecheck   # next typegen && tsc --noEmit → 0 erreur
+pnpm build       # next build (Turbopack)       → succès
+```
+
+`pnpm check` enchaîne les trois. Une Pull Request n'est pas mergeable si l'un des
+trois échoue.
+
+---
+
+## 2. Jalons produit
+
+Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non commencé.
+
+### Phase 1 — Socle public
+
+- [x] **M1 — Page d'accueil** (`src/app/page.tsx`)
+  Hero illustré avec CTA vers les opportunités et la création de profil,
+  présentation de la plateforme, catégories illustrées, talents en vedette et
+  section « Pourquoi Kaji ». Les panneaux candidats/entreprises et le CTA final
+  ont été retirés. Prérendue en statique.
+
+- [x] **M2 — Annuaire des talents** (`src/app/talents/page.tsx`)
+  Filtres en `GET` dans l'URL, validation Zod, facettes, tri « pertinence »,
+  pagination en liens réels, états vide et d'erreur. Route dynamique (`ƒ`) :
+  elle dépend de `searchParams`.
+
+- [x] **M3 — Fiche publique talent** (`src/app/talents/[id]/page.tsx`)
+  En-tête, 7 sections (résumé, expérience, formation, certifications, langues,
+  compétences, disponibilité), colonne de conversion, garde de confidentialité.
+  `notFound()` levé dans `generateMetadata` **et** dans le corps → vrai 404.
+  Route dynamique.
+
+- [x] **M4 — Couche domaine** (`src/lib/domain/`, 7 modules)
+  `enums.ts`, `status-transitions.ts`, `availability.ts`, `freshness.ts`,
+  `matching.ts`, `permissions.ts`, `talent.ts`. Aucun import externe, aucun React,
+  aucune base. Testable sans DOM.
+
+- [x] **M5 — Design system** (`src/components/ui/`, 10 fichiers)
+  Tokens `@theme` (3 échelles de marque + 4 sémantiques, 15 tailles de police,
+  6 rayons, 5 ombres), 27 composants documentés dans `04-design-system.md` §40.3.
+
+- [x] **M6 — En-tête, pied de page, mentions de marque**
+  `Kaji.com` en marque, `Mokengeli SARLU` en opérateur. Lien d'évitement,
+  navigation responsive, pied de page à 4 colonnes.
+
+### Phase 2 — À livrer avant la production
+
+- [ ] **M7 — Pages légales et institutionnelles**
+  `/mentions-legales`, `/confidentialite`, `/a-propos`, `/candidats`,
+  `/entreprises`, `/opportunites`, `/entreprise/inscription`,
+  `/entreprise/demandes` : toutes en `PlaceholderPage`.
+  **Bloquant** : les obligations d'information doivent être publiées avant
+  l'ouverture des comptes (§39.4).
+
+- [ ] **M8 — Contact / demande de profil** (`/contact`)
+  Le CTA est actif et mène à la page, mais le formulaire n'existe pas. C'est le
+  **blocage fonctionnel principal** : sans lui, un visiteur ne peut pas déclencher
+  le parcours de médiation.
+
+### Phase 3 — Hors MVP, spécifié non implémenté
+
+- [ ] Espaces authentifiés (candidat, entreprise, RH, admin)
+- [ ] Workflow de recrutement (§17) et registre des demandes
+- [ ] Opportunités publiées
+- [ ] Documents et pièces justificatives
+- [ ] Notifications (e-mail, in-app)
+- [ ] Persistance (Neon + Drizzle)
+- [ ] Authentification (Clerk)
+
+---
+
+## 3. Exigences métier
+
+Les 18 exigences transverses de `02-product-vision.md` §19.3, avec leur source
+réelle dans le code.
+
+| # | Exigence | Source dans le code | État |
+|---|---|---|---|
+| R1 | Avoir un compte ≠ être disponible | `availability.ts` | `[x]` |
+| R2 | La disponibilité affichée est la disponibilité **effective** | `availability.ts`, `availability-presentation.ts` | `[x]` |
+| R3 | Un profil de plus de 30 jours n'affiche jamais « Disponible » | `FRESHNESS_THRESHOLDS_DAYS` | `[x]` |
+| R4 | Seuls `VERIFIED`, `AVAILABLE`, `OPEN_TO_OPPORTUNITIES` sont présentables | `PRESENTABLE_STATUSES` | `[x]` |
+| R5 | Toute transition non listée est refusée | `status-transitions.ts` | `[x]` |
+| R6 | `PLACED` est un état final | `status-transitions.ts` | `[x]` |
+| R7 | Une fiche non publiable renvoie un vrai 404 | `notFound()` dans `generateMetadata` | `[x]` |
+| R8 | Aucune coordonnée dans une route publique | `PublicTalent` par construction | `[x]` |
+| R9 | Aucune note de valeur d'un candidat n'est publiée | `matching.ts` | `[x]` |
+| R10 | Le score n'est jamais un pourcentage de qualité | `matching.ts`, textes §14 | `[x]` |
+| R11 | Le refus par défaut est la règle en autorisation | `permissions.ts` (`[]` = refus) | `[~]` matrice écrite, **non branchée** |
+| R12 | Le rôle vient exclusivement de la session serveur | — | `[ ]` aucune session n'existe |
+| R13 | Toute URL de filtre est validée par liste blanche | `talent-filters.ts` | `[x]` |
+| R14 | Changer un filtre ramène à la page 1 | `buildDirectoryHref()` | `[x]` |
+| R15 | Kaji.com = marque, Mokengeli SARLU = opérateur | `BRAND`, footer | `[x]` |
+| R16 | Les données de démonstration sont marquées | `src/lib/mock/` | `[x]` |
+| R17 | Un profil retiré reste consultable par l'équipe qui l'a retiré | §9.4 | `[ ]` pas d'espace authentifié |
+| R18 | Le refus de RH est définitif sans arbitrage humain | `verify.ts` à créer | `[ ]` `use-cases/verify.ts` n'existe pas |
+
+**11 exigences livrées, 1 partiellement, 6 non commencées.** Le « 1 partiellement »
+(R11) et les 5 « non commencées » qui dépendent de l'authentification ne sont pas
+des bugs : ce sont des étapes non faites, et elles sont nommées ici plutôt que
+laissées en attente.
+
+---
+
+## 4. Risques ouverts
+
+Repris de `03-system-architecture.md` §39.5, avec le statut réel.
+
+| Risque | Gravité | Statut | Condition de levée |
+|---|---|---|---|
+| Aucune authentification | **Bloquant production** | Non traité | Clerk opérationnel + session serveur |
+| Aucune persistance | **Bloquant production** | Non traité | Neon + Drizzle branchés sur `repositories/index.ts` |
+| Aucun test | Élevé | Non traité | Runner installé + 4 modules critiques couverts |
+| Aucun rate limiting | Élevé | Non traité | Limiteur sur les routes d'écriture et les formulaires |
+| Aucun en-tête CSP | Moyen | Non traité | CSP + `nosniff` + `DENY` en production |
+| Aucune table d'audit | Moyen | Non traité | `audit_event` créée et alimentée |
+| Pages légales en placeholder | **Bloquant production** | Non traité | M7 livré |
+| Formulaire de contact absent | **Bloquant fonctionnel** | Non traité | M8 livré |
+| `framer-motion` inutilisé | Faible | À nettoyer | Dépendance supprimée ou besoin identifié |
+| Assets `create-next-app` non utilisés | Faible | À nettoyer | `public/*.svg` supprimés |
+| `README.md` par défaut | Faible | À nettoyer | README réel |
+| Repository sans commit | Moyen | À traiter | Premier commit |
+
+**4 blocages durs** : authentification, persistance, pages légales, formulaire de
+contact. Aucun n'est un défaut de code — ce sont des étapes non faites.
+
+---
+
+## 5. Écarts de qualité identifiés
+
+Découverts pendant la rédaction des documents, vérifiés dans le code.
+
+| # | Écart | Où | Correction proposée |
+|---|---|---|---|
+| 1 | L'annuaire ne distingue pas « vivier vide » et « aucun résultat pour ces filtres » ; le message promet « le vivier grandit chaque semaine » dans les deux cas | `app/talents/page.tsx:95` | Deux `EmptyState` distincts |
+| 2 | `R11` — la matrice RBAC (14 ressources × 5 actions × 6 rôles) n'est consommée par aucun chemin d'exécution | `lib/domain/permissions.ts` | Statut visible dans l'interface, ou branchement |
+| 3 | M4 est annoncé « testé manuellement » dans `02-product-vision.md`, mais aucun test n'existe | `02-product-vision.md` §21.1 | Reformuler, ou couvrir par des tests |
+| 4 | Le champ `verificationStatus` existe dans `MockTalentRecord` (10 `VERIFIED`, 3 `PARTIAL`, 1 `IN_REVIEW`, 1 `UNVERIFIED`) mais n'est **pas** projeté dans `PublicTalent` : l'écart entre « vérifié par Kaji » et « déclaré par le candidat » n'est jamais affiché | `lib/mock/talents.ts`, `lib/domain/talent.ts` | Décider : projeter un statut de vérification, ou documenter que seul le statut de présence est public |
+| 5 | `daysSinceProfileUpdate` est stocké en **nombre de jours** puis converti en `Date` par `daysAgo()` au moment de la projection (`talents.ts:867`) : le calcul de fraîcheur dépend donc du module entier, et non du repository | `lib/mock/talents.ts:40-47` | Passer la date en `Date` dans le mock, pour que la fraîcheur soit une donnée et non un effet de module |
+| 6 | Le dépôt n'a aucun commit, alors que `pnpm-lock.yaml` est prêt | git | Premier commit |
+| 7 | **Corrigé** — la landing affichait `700+ profils`, `60% vérifiés`, `10 j pour une shortlist` et `{category.count}` (148 pour l'informatique) alors que le vivier contient 14 profils publiés, dont 3 en informatique. Le CTA primaire menait aussi à `/opportunites`, placeholder hors MVP | `app/page.tsx` | **Fait** : `getTalentPoolStats()` calcule les trois chiffres depuis `getDirectoryFacets()` ; compteurs par catégorie retirés ; CTA primaire → `/talents` ; délai de shortlist retiré (l'engagement publié reste 48 h ouvrées) |
+| 8 | `CtaSection` n'était plus monté nulle part depuis la refonte de l'accueil : code mort | `components/cta/cta-section.tsx` | **Fait** : composant et dossier `src/components/cta/` supprimés ; inventaire `04` §40.3 ramené à 27 composants. Le hero porte désormais lui-même les trois entrées (§12) |
+| 9 | `hero01.png` (1,8 Mo) et `section2.jpeg` (377 Ko) importés via `../../public/` : convention contraire à `05` §47, et bundling d'assets destinés à être servis par URL | `app/page.tsx` | **Fait** : images déplacées dans `src/assets/`, imports via `@/assets/` |
+| 10 | Le hero annonçait « Apprendre · Se former · Réussir » et « un écosystème complet pour votre réussite », sans aucune fonctionnalité de formation dans le produit | `app/page.tsx` | **Fait** : badge → « Vérification · Médiation · Mise en relation » ; titre → « Un vivier encadré, pas une diffusion de masse » ; description recentrée sur la vérification, la disponibilité et l'interlocuteur |
+| 11 | Le hero n'offrait plus d'entrée entreprise : `PRIMARY_CTA.employer` n'était plus appelé que par l'en-tête, en contradiction avec l'ordre « entreprise avant candidat » du §12 | `app/page.tsx` | **Fait** : « Je cherche un talent » restauré en secondaire du hero, « Créer mon profil » en lien tertiary |
+| 12 | `hero01.png` fait 1,8 Mo en PNG sans perte pour un hero rendu à 464 px de large maximum (source 1199 × 1312) | `assets/hero01.png` | **Non fait, faute d'outil** : ni `cwebp`, ni ImageMagick, ni `sharp` dans le dépôt. `next/image` sert une variante WebP/AVIF redimensionnée au navigateur, donc le coût pour le visiteur est maîtrisé ; le coût restant est le poids du dépôt et le temps d'optimisation au build. Re-exporter en WebP à la source, ou ajouter `sharp` comme dépendance de développement |
+
+Les écarts 7, 9, 10 et 11 ont été corrigés le jour de la refonte de l'accueil.
+Ils formaient une seule famille : **des promesses publiques que le code ne peut
+pas tenir**. Trois sous-formes, à surveiller séparément parce qu'elles ne se
+ressemblent pas :
+
+| Forme | Exemple | Détection |
+|---|---|---|
+| Chiffre écrit en dur | `700+ profils`, `148 profils` | Simple : comparer à `getDirectoryFacets()` |
+| Chiffre lu depuis un référentiel de démonstration | `category.count` | Simple : le référentiel est dans `src/lib/mock/` |
+| Promesse en texte | « Apprendre · Se former », « 10 j pour une shortlist » | **Difficile** : il n'y a pas de test qui la rattache à une fonctionnalité |
+
+La troisième forme est la plus coûteuse, parce qu'aucune erreur de compilation ne
+la signale et qu'elle se glisse dans une refonte graphique. La règle à appliquer
+avant de valider une refonte de landing : **chaque promesse de la page doit
+renvoyer à une exigence de `02-product-vision.md` ou à une fonctionnalité
+existante.** Si elle ne renvoie à rien, c'est une fausse promesse, même écrite
+élégamment.
+
+Reste l'écart 12 (`hero01.png`), seul item non résolu : il demande un outil de
+conversion d'image que le dépôt ne contient pas.
+
+L'écart 4 est le plus intéressant : le jeu de données distingue réellement le
+niveau de vérification (10 `VERIFIED`, 3 `PARTIAL`, 1 `IN_REVIEW`,
+1 `UNVERIFIED`) de la visibilité (14 `PUBLIC`, 1 `ON_REQUEST`), et 1 profil est
+`ARCHIVED`. La répartition des statuts (5 `AVAILABLE`, 2 `OPEN_TO_OPPORTUNITIES`,
+2 `VERIFIED`, 2 `PREQUALIFIED`, 1 `NEW`, 1 `CONTACTED`, 1 `IN_PROCESS`,
+1 `UNAVAILABLE`) et des fraîcheurs (3 à 134 jours) est riche et cohérente avec ce
+que le moteur de disponibilité doit produire.
+
+---
+
+## 6. Décisions prises, à confirmer
+
+Décisions d'architecture documentées mais non arbitrées. Elles ne bloquent rien
+aujourd'hui ; elles le feront à l'ouverture.
+
+| Décision | Valeur retenue par défaut | Où c'est dit | À confirmer par |
+|---|---|---|---|
+| Fournisseur d'e-mails | `RESEND_API_KEY` (ou équivalent) | `03` §38.2 | l'équipe, avant notification |
+| Stockage objet | Compatible S3 (ou équivalent) | `03` §38.2 | l'équipe, avant documents |
+| Région Neon | Plus proche des utilisateurs (RDC / Cameroun / Europe de l'Ouest) | `03` §31.1 | l'équipe, à l'ouverture |
+| Plateforme de déploiement | Vercel | `03` §31.1 | l'équipe, à l'ouverture |
+| Fournisseur de tests | Aucun pour l'instant | `05` §58 | l'équipe, avant M7 |
+
+---
+
+## 7. Ordre de travail recommandé
+
+Séquence proposée. Chaque étape est petite, vérifiable, et laisse le dépôt dans
+un état valide.
+
+### Étape 1 — Débloquer la production sans dépendance externe
+
+1. ~~Supprimer `framer-motion` (dépendance morte) et `public/*.svg` (assets
+   par défaut).~~ **Fait** — `pnpm remove framer-motion`, cinq SVG supprimés,
+   `pnpm check` au vert. Dépendances restantes : 8, dont 7 importées
+   directement ; `react-dom` n'est importée nulle part mais reste requise comme
+   peer dependency de React 19 par Next.js.
+2. ~~Remplacer `README.md` par un README réel.~~ **Fait** — stack, commandes,
+   structure, sens de dépendance, sept documents, règles non négociables.
+   Chaque affirmation vérifiable du README a été confrontée au code.
+3. Premier commit. **Reste à faire** — c'est la seule chose qui bloque la
+   suite : sans historique, aucune des corrections ci-dessus n'est
+   réversible.
+
+### Étape 2 — Tests sur la couche domaine
+
+4. Installer un runner (`vitest`) et ajouter le script à `pnpm check`.
+5. Couvrir dans l'ordre de la valeur défini en `05` §58.2 :
+   `status-transitions` → `availability` → `freshness` → `permissions` →
+   `matching` → `validation/*`.
+6. Corriger `M4` dans `02-product-vision.md` selon ce qui est réellement couvert.
+
+### Étape 3 — Corriger les écarts de qualité
+
+7. Deux `EmptyState` distincts sur l'annuaire (écart 1).
+8. Rendre la fraîcheur calculable hors du module mock (écart 5).
+9. Décider du sort de `verificationStatus` (écart 4) et documenter.
+10. Rendre visible ou assumer l'état de la matrice RBAC (écart 2).
+
+### Étape 4 — Contenu et parcours
+
+11. Livrer M8 (formulaire de contact + demande de profil). C'est le levier
+    produit le plus rentable : sans lui, le site ne convertit pas.
+12. Livrer M7 (pages légales). Prérequis réglementaire, pas une option.
+13. Écrire les pages institutionnelles (`/a-propos`, `/entreprises`,
+    `/opportunites`) pour qu'ils cessent d'être des placeholders.
+
+### Étape 5 — Infrastructure
+
+14. Clerk : intégration, session, `proxy.ts`, branchement de la matrice RBAC.
+15. Neon + Drizzle : schéma, migrations, `DrizzleTalentRepository`, bascule dans
+    `repositories/index.ts`.
+16. `audit_event` + rate limiting + en-têtes CSP.
+17. Notifications e-mail.
+
+**Ne pas commencer l'étape 5 avant l'étape 2.** Brancher une base sans tests sur
+la couche domaine revient à écrire des requêtes SQL qu'aucun test ne protège.
+
+---
+
+## 8. Comment mettre à jour ce fichier
+
+1. À la fin de chaque tâche, vérifier ce qui a réellement changé.
+2. Cocher `[x]` uniquement si le code le prouve.
+3. Ajouter l'écart si la tâche crée une dette visible.
+4. Réordonner la section 7 si la priorité change.
+5. Ne pas gonfler le périmètre : un jalon hors MVP reste hors MVP, il ne devient
+   pas un objectif.
+
+Le suivi de l'avancement des documents de contexte lui-même est dans
+`01-ai-workflow.md`. Celui du produit est ici.

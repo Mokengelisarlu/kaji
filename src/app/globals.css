@@ -1,0 +1,269 @@
+@import "tailwindcss";
+
+/**
+ * Kaji.com — Design System tokens
+ * Source de vérité : 04-design-system.md
+ *
+ * Direction visuelle : « Nuit Kaji » (profondeur, confiance, technologie)
+ * + « Or Kaji » (médiation humaine, chaleur, confiance).
+ * Ne pas introduire de couleur en dehors de cette échelle.
+ */
+
+@theme {
+  /* ---------------------------------------------------------------------
+   * Couleurs de marque
+   * ------------------------------------------------------------------- */
+
+  /* Nuit Kaji — bleu-vert profond. Couleur d'action et de confiance. */
+  --color-kaji-50: oklch(0.97 0.012 200);
+  --color-kaji-100: oklch(0.94 0.024 200);
+  --color-kaji-200: oklch(0.88 0.04 202);
+  --color-kaji-300: oklch(0.79 0.058 203);
+  --color-kaji-400: oklch(0.66 0.076 204);
+  --color-kaji-500: oklch(0.53 0.086 205);
+  --color-kaji-600: oklch(0.43 0.082 206);
+  --color-kaji-700: oklch(0.35 0.068 207);
+  --color-kaji-800: oklch(0.28 0.052 208);
+  --color-kaji-900: oklch(0.22 0.04 209);
+  --color-kaji-950: oklch(0.16 0.03 210);
+
+  /* Or Kaji — ambre chaud. Médiation humaine, vérification, mise en valeur. */
+  --color-or-50: oklch(0.98 0.02 85);
+  --color-or-100: oklch(0.95 0.045 84);
+  --color-or-200: oklch(0.9 0.085 82);
+  --color-or-300: oklch(0.85 0.115 80);
+  --color-or-400: oklch(0.8 0.135 78);
+  --color-or-500: oklch(0.74 0.14 72);
+  --color-or-600: oklch(0.65 0.125 62);
+  --color-or-700: oklch(0.54 0.105 55);
+  --color-or-800: oklch(0.44 0.082 50);
+  --color-or-900: oklch(0.36 0.064 48);
+  --color-or-950: oklch(0.24 0.042 48);
+
+  /* Sable — neutres chauds. Évite l'aspect clinique du gris pur. */
+  --color-sable-50: oklch(0.985 0.003 90);
+  --color-sable-100: oklch(0.967 0.005 90);
+  --color-sable-200: oklch(0.922 0.007 88);
+  --color-sable-300: oklch(0.858 0.009 86);
+  --color-sable-400: oklch(0.708 0.011 84);
+  --color-sable-500: oklch(0.585 0.012 82);
+  --color-sable-600: oklch(0.478 0.012 80);
+  --color-sable-700: oklch(0.395 0.011 78);
+  --color-sable-800: oklch(0.281 0.01 76);
+  --color-sable-900: oklch(0.213 0.009 75);
+  --color-sable-950: oklch(0.145 0.008 74);
+
+  /* États — sémantique, jamais utilisée comme couleur décorative. */
+  --color-success-50: oklch(0.96 0.03 155);
+  --color-success-100: oklch(0.92 0.06 155);
+  --color-success-500: oklch(0.62 0.13 155);
+  --color-success-600: oklch(0.52 0.12 156);
+  --color-success-700: oklch(0.43 0.1 157);
+  --color-success-900: oklch(0.28 0.07 158);
+
+  --color-warning-50: oklch(0.97 0.04 85);
+  --color-warning-100: oklch(0.93 0.08 85);
+  --color-warning-500: oklch(0.76 0.14 75);
+  --color-warning-600: oklch(0.64 0.13 65);
+  --color-warning-700: oklch(0.52 0.11 58);
+  --color-warning-900: oklch(0.3 0.07 52);
+
+  --color-danger-50: oklch(0.96 0.025 25);
+  --color-danger-100: oklch(0.92 0.05 25);
+  --color-danger-500: oklch(0.58 0.19 27);
+  --color-danger-600: oklch(0.5 0.18 27);
+  --color-danger-700: oklch(0.42 0.15 27);
+  --color-danger-900: oklch(0.27 0.1 27);
+
+  --color-info-50: oklch(0.96 0.025 230);
+  --color-info-100: oklch(0.92 0.05 230);
+  --color-info-500: oklch(0.6 0.13 240);
+  --color-info-600: oklch(0.51 0.13 242);
+  --color-info-700: oklch(0.43 0.12 244);
+  --color-info-900: oklch(0.28 0.08 246);
+
+  /* Rôles applicatifs — ce que les composants consomment. */
+  --color-background: var(--color-sable-50);
+  --color-surface: oklch(1 0 0);
+  --color-surface-muted: var(--color-sable-100);
+  --color-foreground: var(--color-sable-900);
+  --color-muted-foreground: var(--color-sable-600);
+  --color-subtle-foreground: var(--color-sable-500);
+  --color-border: var(--color-sable-200);
+  --color-border-strong: var(--color-sable-300);
+  --color-ring: var(--color-kaji-500);
+  --color-primary: var(--color-kaji-700);
+  --color-primary-hover: var(--color-kaji-800);
+  --color-primary-foreground: oklch(0.99 0 0);
+  --color-accent: var(--color-or-500);
+  --color-accent-foreground: var(--color-or-950);
+
+  /* ---------------------------------------------------------------------
+   * Typographie
+   * Fraunces = voix éditoriale (médiation humaine).
+   * Plus Jakarta Sans = interface, lisibilité, ton professionnel.
+   * ------------------------------------------------------------------- */
+  --font-display: var(--font-kaji-display), ui-serif, Georgia, serif;
+  --font-sans: var(--font-kaji-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-2xs--letter-spacing: 0.04em;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.35rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.65;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.7;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.6;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.4;
+  --text-2xl--letter-spacing: -0.01em;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.25;
+  --text-3xl--letter-spacing: -0.015em;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.15;
+  --text-4xl--letter-spacing: -0.02em;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1.08;
+  --text-5xl--letter-spacing: -0.025em;
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 1.02;
+  --text-6xl--letter-spacing: -0.03em;
+  --text-7xl: 4.5rem;
+  --text-7xl--line-height: 1;
+  --text-7xl--letter-spacing: -0.03em;
+
+  /* ---------------------------------------------------------------------
+   * Rayons — sobres et professionnels, pas de formes « pilule » abusives.
+   * ------------------------------------------------------------------- */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+
+  /* ---------------------------------------------------------------------
+   * Ombres — diffuses et basses, jamais dures.
+   * ------------------------------------------------------------------- */
+  --shadow-xs: 0 1px 2px 0 oklch(0.213 0.009 75 / 0.05);
+  --shadow-sm:
+    0 1px 2px 0 oklch(0.213 0.009 75 / 0.06),
+    0 1px 3px 0 oklch(0.213 0.009 75 / 0.04);
+  --shadow-md:
+    0 2px 4px -1px oklch(0.213 0.009 75 / 0.06),
+    0 4px 12px -2px oklch(0.213 0.009 75 / 0.06);
+  --shadow-lg:
+    0 4px 8px -2px oklch(0.213 0.009 75 / 0.07),
+    0 12px 28px -6px oklch(0.213 0.009 75 / 0.09);
+  --shadow-focus: 0 0 0 3px oklch(0.53 0.086 205 / 0.35);
+
+  /* ---------------------------------------------------------------------
+   * Transitions
+   * ------------------------------------------------------------------- */
+  --ease-kaji: cubic-bezier(0.2, 0, 0, 1);
+  --default-transition-duration: 180ms;
+
+  --animate-fade-up: fade-up 0.5s var(--ease-kaji) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* -----------------------------------------------------------------------
+ * Base
+ * --------------------------------------------------------------------- */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Cible tactile : 44px minimum sur les éléments interactifs. */
+  :where(a, button, [role="button"], input, select, textarea):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  ::selection {
+    background-color: var(--color-kaji-200);
+    color: var(--color-kaji-950);
+  }
+}
+
+@layer utilities {
+  /* Lien d'évitement — première tabulation. */
+  .skip-link {
+    position: absolute;
+    left: 0.5rem;
+    top: -100%;
+    z-index: 100;
+    border-radius: var(--radius-md);
+    background-color: var(--color-primary);
+    padding: 0.625rem 1rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-primary-foreground);
+    transition: top 150ms var(--ease-kaji);
+  }
+
+  .skip-link:focus {
+    top: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
