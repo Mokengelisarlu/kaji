@@ -16,7 +16,7 @@ partageable et indexable, dont les coordonnées ne sont jamais publiées.
 | React | 19.2.8 |
 | TypeScript | 5, `strict` + `noUncheckedIndexedAccess` |
 | Tailwind CSS | 4 (`@theme` dans `src/app/globals.css`) |
-| Validation | Zod 4 |
+| Validation | Zod 4, tests Vitest 5 (108 tests, couche domaine) |
 | Icônes | lucide-react |
 | Paquet | pnpm 11 |
 
@@ -30,14 +30,16 @@ pnpm install
 pnpm dev          # serveur de développement
 pnpm build        # build de production
 pnpm start        # serveur de production
-pnpm lint         # eslint
+pnpm test         # vitest run
+pnpm test:watch   # vitest en continu
 pnpm typecheck    # next typegen && tsc --noEmit
-pnpm check        # lint + typecheck + build — à passer avant tout commit
+pnpm check        # lint + test + typecheck + build — à passer avant tout commit
 ```
 
 `pnpm check` est la seule commande qui compte avant de dire qu'une chose
-fonctionne. Il n'y a pas de suite de tests : c'est une dette ouverte, pas un
-oubli. Voir `06-progress-tracker.md` §4.
+fonctionne. Les 108 tests Vitest couvrent la couche domaine et la validation
+d'entrée ; les composants, use cases et repositories ne sont pas encore testés.
+Voir `06-progress-tracker.md` §4.
 
 ## Structure
 

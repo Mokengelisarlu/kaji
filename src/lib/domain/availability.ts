@@ -23,9 +23,19 @@ export type AvailabilityInput = {
  *
  * Règle non négociable : **avoir un compte ne signifie jamais être disponible**.
  * Un profil n'est `AVAILABLE` que si les trois conditions sont réunies :
- *   1. le statut candidat l'autorise ;
+ *   1. son statut n'est ni `ARCHIVED`, ni `PLACED`/`IN_PROCESS`, ni
+ *      `UNAVAILABLE` — ces trois statuts court-circuitent en `UNAVAILABLE` ;
  *   2. la déclaration n'est pas `NOT_AVAILABLE` ;
  *   3. la dernière mise à jour est récente (< 30 jours).
+ *
+ * La liste complète et l'ordre de ces règles sont normatifs : ils figurent
+ * dans `02-product-vision.md` §3.1, tableau de décision. Toute modification de
+ * cet ordre est un changement produit, pas un refactor.
+ *
+ * Cette fonction ne pose **aucune** porte de statut sur `PRESENTABLE_STATUSES` :
+ * elle décrit ce que le candidat déclare, pas ce que Kaji peut présenter à une
+ * entreprise. C'est `isPresentableAvailability()` qui porte cette porte, et
+ * elle est évaluée par le matching. Ne pas fusionner les deux.
  *
  * Au-delà de 30 jours, on ne retombe jamais automatiquement sur `AVAILABLE` :
  * le profil bascule en `REQUIRES_CONFIRMATION` et doit être reconfirmé par

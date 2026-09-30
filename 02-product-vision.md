@@ -989,7 +989,7 @@ qui n'existe pas encore.
 | M1 | Page d'accueil | Livré | Hero illustré, présentation de la plateforme, catégories illustrées, talents en vedette, section « Pourquoi Kaji » ; sans panneaux par public ni CTA final |
 | M2 | Annuaire des talents `/talents` | Livré | Filtres URL, facettes, tri, pagination, états vides et d'erreur |
 | M3 | Fiche publique talent `/talents/[id]` | Livré | En-tête, 7 sections, colonne conversion + confidentialité, 404 réel |
-| M4 | Domain layer complet (statuts, disponibilité, fraîcheur, matching, RBAC, transitions) | Livré | Codé et testé manuellement |
+| M4 | Domain layer complet (statuts, disponibilité, fraîcheur, matching, RBAC, transitions) | Livré | 108 tests Vitest, dans le même répertoire que les modules. Couverture : `status-transitions`, `availability`, `freshness`, `permissions`, `matching`, `validation/*`. Non couvert : `enums.ts` (constantes pures) et `talent.ts` (types) |
 | M5 | Design system (tokens, boutons, champs, cartes, badges, états, mise en page) | Livré | Base pour toutes les phases suivantes |
 | M6 | En-tête, pied de page, mentions de marque | Livré | Opérateur nommé |
 | M7 | Pages légales et institutionnelles | Placeholder | Doivent être livrées avant la production |

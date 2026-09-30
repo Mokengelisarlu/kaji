@@ -69,6 +69,7 @@ Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non c
   `enums.ts`, `status-transitions.ts`, `availability.ts`, `freshness.ts`,
   `matching.ts`, `permissions.ts`, `talent.ts`. Aucun import externe, aucun React,
   aucune base. Testable sans DOM.
+  **Couvert par 108 tests Vitest** dans `src/**/*.test.ts` (étape 2).
 
 - [x] **M5 — Design system** (`src/components/ui/`, 10 fichiers)
   Tokens `@theme` (3 échelles de marque + 4 sémantiques, 15 tailles de police,
@@ -169,16 +170,18 @@ Découverts pendant la rédaction des documents, vérifiés dans le code.
 |---|---|---|---|
 | 1 | L'annuaire ne distingue pas « vivier vide » et « aucun résultat pour ces filtres » ; le message promet « le vivier grandit chaque semaine » dans les deux cas | `app/talents/page.tsx:95` | Deux `EmptyState` distincts |
 | 2 | `R11` — la matrice RBAC (14 ressources × 5 actions × 6 rôles) n'est consommée par aucun chemin d'exécution | `lib/domain/permissions.ts` | Statut visible dans l'interface, ou branchement |
-| 3 | M4 est annoncé « testé manuellement » dans `02-product-vision.md`, mais aucun test n'existe | `02-product-vision.md` §21.1 | Reformuler, ou couvrir par des tests |
+| 3 | M4 est annoncé « testé manuellement » dans `02-product-vision.md`, mais aucun test n'existe | `02-product-vision.md` §21.1 | **Fait** : 108 tests Vitest (`src/**/*.test.ts`), intégrés à `pnpm check` ; `02` §21.1 reformulé en conséquence |
 | 4 | Le champ `verificationStatus` existe dans `MockTalentRecord` (10 `VERIFIED`, 3 `PARTIAL`, 1 `IN_REVIEW`, 1 `UNVERIFIED`) mais n'est **pas** projeté dans `PublicTalent` : l'écart entre « vérifié par Kaji » et « déclaré par le candidat » n'est jamais affiché | `lib/mock/talents.ts`, `lib/domain/talent.ts` | Décider : projeter un statut de vérification, ou documenter que seul le statut de présence est public |
 | 5 | `daysSinceProfileUpdate` est stocké en **nombre de jours** puis converti en `Date` par `daysAgo()` au moment de la projection (`talents.ts:867`) : le calcul de fraîcheur dépend donc du module entier, et non du repository | `lib/mock/talents.ts:40-47` | Passer la date en `Date` dans le mock, pour que la fraîcheur soit une donnée et non un effet de module |
-| 6 | Le dépôt n'a aucun commit, alors que `pnpm-lock.yaml` est prêt | git | Premier commit |
+| 6 | Le dépôt n'a aucun commit, alors que `pnpm-lock.yaml` est prêt | git | **Fait** : commit `1021ab5`, 81 fichiers |
 | 7 | **Corrigé** — la landing affichait `700+ profils`, `60% vérifiés`, `10 j pour une shortlist` et `{category.count}` (148 pour l'informatique) alors que le vivier contient 14 profils publiés, dont 3 en informatique. Le CTA primaire menait aussi à `/opportunites`, placeholder hors MVP | `app/page.tsx` | **Fait** : `getTalentPoolStats()` calcule les trois chiffres depuis `getDirectoryFacets()` ; compteurs par catégorie retirés ; CTA primaire → `/talents` ; délai de shortlist retiré (l'engagement publié reste 48 h ouvrées) |
 | 8 | `CtaSection` n'était plus monté nulle part depuis la refonte de l'accueil : code mort | `components/cta/cta-section.tsx` | **Fait** : composant et dossier `src/components/cta/` supprimés ; inventaire `04` §40.3 ramené à 27 composants. Le hero porte désormais lui-même les trois entrées (§12) |
 | 9 | `hero01.png` (1,8 Mo) et `section2.jpeg` (377 Ko) importés via `../../public/` : convention contraire à `05` §47, et bundling d'assets destinés à être servis par URL | `app/page.tsx` | **Fait** : images déplacées dans `src/assets/`, imports via `@/assets/` |
 | 10 | Le hero annonçait « Apprendre · Se former · Réussir » et « un écosystème complet pour votre réussite », sans aucune fonctionnalité de formation dans le produit | `app/page.tsx` | **Fait** : badge → « Vérification · Médiation · Mise en relation » ; titre → « Un vivier encadré, pas une diffusion de masse » ; description recentrée sur la vérification, la disponibilité et l'interlocuteur |
 | 11 | Le hero n'offrait plus d'entrée entreprise : `PRIMARY_CTA.employer` n'était plus appelé que par l'en-tête, en contradiction avec l'ordre « entreprise avant candidat » du §12 | `app/page.tsx` | **Fait** : « Je cherche un talent » restauré en secondaire du hero, « Créer mon profil » en lien tertiary |
 | 12 | `hero01.png` fait 1,8 Mo en PNG sans perte pour un hero rendu à 464 px de large maximum (source 1199 × 1312) | `assets/hero01.png` | **Non fait, faute d'outil** : ni `cwebp`, ni ImageMagick, ni `sharp` dans le dépôt. `next/image` sert une variante WebP/AVIF redimensionnée au navigateur, donc le coût pour le visiteur est maîtrisé ; le coût restant est le poids du dépôt et le temps d'optimisation au build. Re-exporter en WebP à la source, ou ajouter `sharp` comme dépendance de développement |
+| 13 | La validation de `searchParams` est globale et non par champ : un seul paramètre fautif (`?sort=inconnu`) vide **tous** les filtres, y compris une catégorie valide. Comportement conforme au commentaire du module, mais l'utilisateur perd son filtre métier sans que l'interface le dise | `lib/validation/talent-filters.ts:130` | Décider : validation par champ avec fusion des valeurs valides, ou affichage explicite de l'avertissement déjà produit par `issues`. Verrouillé par un test dans `talent-filters.test.ts` |
+| 14 | `AvailabilityInput.lastAvailabilityConfirmationAt` est déclaré et documenté, mais jamais lu : la disponibilité effective se fonde sur la seule mise à jour du profil. `freshness.ts:22` affirme que `resolveEffectiveAvailability` traite ce champ séparément — il ne le fait pas | `lib/domain/availability.ts:24` | Soit l'utiliser comme seconde source de fraîcheur, soit le retirer du type et corriger le commentaire. Une reconfirmation explicite plus récente que la mise à jour du profil n'a aujourd'hui aucun effet |
 
 Les écarts 7, 9, 10 et 11 ont été corrigés le jour de la refonte de l'accueil.
 Ils formaient une seule famille : **des promesses publiques que le code ne peut
@@ -241,17 +244,36 @@ un état valide.
 2. ~~Remplacer `README.md` par un README réel.~~ **Fait** — stack, commandes,
    structure, sens de dépendance, sept documents, règles non négociables.
    Chaque affirmation vérifiable du README a été confrontée au code.
-3. Premier commit. **Reste à faire** — c'est la seule chose qui bloque la
-   suite : sans historique, aucune des corrections ci-dessus n'est
-   réversible.
+3. ~~Premier commit.~~ **Fait** — `1021ab5`, 81 fichiers, premier commit de
+   l'historique. L'arbre est propre.
 
 ### Étape 2 — Tests sur la couche domaine
 
-4. Installer un runner (`vitest`) et ajouter le script à `pnpm check`.
-5. Couvrir dans l'ordre de la valeur défini en `05` §58.2 :
-   `status-transitions` → `availability` → `freshness` → `permissions` →
-   `matching` → `validation/*`.
-6. Corriger `M4` dans `02-product-vision.md` selon ce qui est réellement couvert.
+4. ~~Installer un runner (`vitest`) et ajouter le script à `pnpm check`.~~
+   **Fait** — `vitest@5.0.2`, scripts `test` / `test:watch`, `check` devient
+   `lint && test && typecheck && build`. Config `vitest.config.mts` en
+   `environment: "node"` : un test qui demanderait `jsdom` ne testerait pas le
+   domaine. `@types/node` monté de `^20` à `^24`, exigé par vitest 5 ;
+   `pnpm peers check` est propre et `pnpm typecheck` reste vert.
+5. ~~Couvrir dans l'ordre de valeur de `05` §58.2.~~ **Fait** — 108 tests,
+   7 fichiers, dans cet ordre :
+
+   | Priorité | Module | Tests |
+   |---|---|---|
+   | 1 | `domain/status-transitions.ts` | 16 |
+   | 2 | `domain/availability.ts` | 15 |
+   | 3 | `domain/freshness.ts` | 16 |
+   | 4 | `domain/permissions.ts` | 16 |
+   | 5 | `domain/matching.ts` | 20 |
+   | 6 | `validation/candidate-id.ts` | 8 |
+   | 6 | `validation/talent-filters.ts` | 17 |
+
+   Total 108, relevé sur la sortie de `vitest`, pas compté à la main.
+
+   `enums.ts` et `talent.ts` ne sont pas testés : le premier ne contient que
+   des constantes, le second que des types.
+6. ~~Corriger `M4`.~~ **Fait** — `02` §21.1 annonce désormais « 108 tests
+   Vitest » et nomme ce qui n'est pas couvert.
 
 ### Étape 3 — Corriger les écarts de qualité
 

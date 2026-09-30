@@ -630,15 +630,22 @@ besoin identifié.
 
 ### 58.1 État actuel — à lire avant tout le reste
 
-**Il n'y a aucun test et aucun runner.** Pas de `vitest.config.ts`, pas de
-`jest.config.ts`, pas de dépendance de test dans `package.json`, pas de fichier
-`*.test.ts` dans `src/`. `pnpm check` enchaîne `lint`, `typecheck` et `build` —
-**aucune étape de test**.
+**Runner installé, couche domaine couverte, reste du dépôt non testé.**
 
-C'est un écart notable et assumé dans le cadre actuel : le dépôt livre un site
-public sans donnée réelle, où la validation repose sur `tsc`, sur ESLint, sur le
-build, et sur la relecture des règles dans `domain/`. Ce n'est pas suffisant pour
-la suite, et c'est consigné comme tel dans `06-progress-tracker.md`.
+| Élément | État |
+|---|---|
+| Runner | `vitest@5.0.2`, config `vitest.config.mts`, `environment: "node"` |
+| Intégration | `pnpm check` enchaîne `lint` → `test` → `typecheck` → `build` |
+| Couvert | 108 tests, 7 fichiers, dans `src/` à côté des modules |
+| Non couvert | `app/`, `components/`, `lib/use-cases/`, `lib/repositories/`, `lib/mock/` |
+
+Les tests vivent à côté de leur module (`src/lib/domain/matching.test.ts`), sont
+nommés d'après le comportement observé et n'importent rien hors de `domain/`.
+
+Ce qui reste non testé est ce qui dépend d'un rendu, d'une requête ou d'un
+repository : composants, use cases, repository mock. Ces couches exigent
+`jsdom` et des doublures de test, et ne sont pas commencées. Ce n'est pas
+assumé pour l'étape 2 : c'est le travail de l'étape 3 du tracker.
 
 ### 58.2 Ce qui doit être testé en premier
 
