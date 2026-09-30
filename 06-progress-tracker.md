@@ -168,11 +168,11 @@ Découverts pendant la rédaction des documents, vérifiés dans le code.
 
 | # | Écart | Où | Correction proposée |
 |---|---|---|---|
-| 1 | L'annuaire ne distingue pas « vivier vide » et « aucun résultat pour ces filtres » ; le message promet « le vivier grandit chaque semaine » dans les deux cas | `app/talents/page.tsx:95` | Deux `EmptyState` distincts |
+| 1 | L'annuaire ne distingue pas « vivier vide » et « aucun résultat pour ces filtres » ; le message promet « le vivier grandit chaque semaine » dans les deux cas | `app/talents/page.tsx:95` | **Fait** : deux `EmptyState` distincts, avec titre, description et icône différents (`Users` pour un vivier vide, `SearchX` pour un filtrage sans résultat). L'action « Réinitialiser les filtres » n'apparaît que dans le second cas, où elle a un sens. Vérifié en HTTP : `?category=inexistant` affiche « Aucun profil ne correspond », jamais « Le vivier est en cours de constitution ». Cette seconde branche reste inatteignable tant que le vivier de démonstration contient 14 profils — elle le sera au démarrage d'un déploiement réel |
 | 2 | `R11` — la matrice RBAC (14 ressources × 5 actions × 6 rôles) n'est consommée par aucun chemin d'exécution | `lib/domain/permissions.ts` | Statut visible dans l'interface, ou branchement |
 | 3 | M4 est annoncé « testé manuellement » dans `02-product-vision.md`, mais aucun test n'existe | `02-product-vision.md` §21.1 | **Fait** : 108 tests Vitest (`src/**/*.test.ts`), intégrés à `pnpm check` ; `02` §21.1 reformulé en conséquence |
 | 4 | Le champ `verificationStatus` existe dans `MockTalentRecord` (10 `VERIFIED`, 3 `PARTIAL`, 1 `IN_REVIEW`, 1 `UNVERIFIED`) mais n'est **pas** projeté dans `PublicTalent` : l'écart entre « vérifié par Kaji » et « déclaré par le candidat » n'est jamais affiché | `lib/mock/talents.ts`, `lib/domain/talent.ts` | Décider : projeter un statut de vérification, ou documenter que seul le statut de présence est public |
-| 5 | `daysSinceProfileUpdate` est stocké en **nombre de jours** puis converti en `Date` par `daysAgo()` au moment de la projection (`talents.ts:867`) : le calcul de fraîcheur dépend donc du module entier, et non du repository | `lib/mock/talents.ts:40-47` | Passer la date en `Date` dans le mock, pour que la fraîcheur soit une donnée et non un effet de module |
+| 5 | `daysSinceProfileUpdate` est stocké en **nombre de jours** puis converti en `Date` par `daysAgo()` au moment de la projection (`talents.ts:867`) : le calcul de fraîcheur dépend donc du module entier, et non du repository | `lib/mock/talents.ts:40-47` | **Fait** : `MockTalentRecord` porte désormais `lastProfileUpdateAt: Date` et `lastAvailabilityConfirmationAt: Date`. Les 15 records sont inchangés, `toPublicTalent()` ne connaît plus l'ancre temporelle. `05` §44.3 mis à jour |
 | 6 | Le dépôt n'a aucun commit, alors que `pnpm-lock.yaml` est prêt | git | **Fait** : commit `1021ab5`, 81 fichiers |
 | 7 | **Corrigé** — la landing affichait `700+ profils`, `60% vérifiés`, `10 j pour une shortlist` et `{category.count}` (148 pour l'informatique) alors que le vivier contient 14 profils publiés, dont 3 en informatique. Le CTA primaire menait aussi à `/opportunites`, placeholder hors MVP | `app/page.tsx` | **Fait** : `getTalentPoolStats()` calcule les trois chiffres depuis `getDirectoryFacets()` ; compteurs par catégorie retirés ; CTA primaire → `/talents` ; délai de shortlist retiré (l'engagement publié reste 48 h ouvrées) |
 | 8 | `CtaSection` n'était plus monté nulle part depuis la refonte de l'accueil : code mort | `components/cta/cta-section.tsx` | **Fait** : composant et dossier `src/components/cta/` supprimés ; inventaire `04` §40.3 ramené à 27 composants. Le hero porte désormais lui-même les trois entrées (§12) |
@@ -277,10 +277,13 @@ un état valide.
 
 ### Étape 3 — Corriger les écarts de qualité
 
-7. Deux `EmptyState` distincts sur l'annuaire (écart 1).
-8. Rendre la fraîcheur calculable hors du module mock (écart 5).
+7. ~~Deux `EmptyState` distincts sur l'annuaire (écart 1).~~ **Fait.**
+8. ~~Rendre la fraîcheur calculable hors du module mock (écart 5).~~ **Fait.**
 9. Décider du sort de `verificationStatus` (écart 4) et documenter.
+   **Décision produit requise** — les deux options ont un coût différent.
 10. Rendre visible ou assumer l'état de la matrice RBAC (écart 2).
+    **Décision produit requise** — 410 combinations testées, aucune consommée
+    par un chemin d'exécution.
 
 ### Étape 4 — Contenu et parcours
 

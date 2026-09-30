@@ -69,10 +69,17 @@ export type MockTalentRecord = {
   readonly experiences: readonly Experience[];
   readonly education: readonly Education[];
   readonly certifications: readonly Certification[];
-  /** Dernière mise à jour volontaire du profil, en jours avant l'ancre. */
-  readonly daysSinceProfileUpdate: number;
+  /**
+   * Dernière mise à jour volontaire du profil.
+   *
+   * Une `Date`, pas un nombre de jours : le record est une donnée
+   * auto-descriptive, lisible et testable sans charger le module. Convertir
+   * ici plutôt qu'à la projection évite que `toPublicTalent` dépende de
+   * l'ancre temporelle du fichier.
+   */
+  readonly lastProfileUpdateAt: Date;
   /** Dernière reconfirmation explicite de la disponibilité. */
-  readonly daysSinceAvailabilityConfirmation: number;
+  readonly lastAvailabilityConfirmationAt: Date;
 };
 
 const RECORDS: readonly MockTalentRecord[] = [
@@ -107,8 +114,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.REFERRAL,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 6,
-    daysSinceAvailabilityConfirmation: 6,
+    lastProfileUpdateAt: daysAgo(6),
+    lastAvailabilityConfirmationAt: daysAgo(6),
     experiences: [
       {
         id: "e-1",
@@ -179,8 +186,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.TRAINING_CENTER,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 12,
-    daysSinceAvailabilityConfirmation: 12,
+    lastProfileUpdateAt: daysAgo(12),
+    lastAvailabilityConfirmationAt: daysAgo(12),
     experiences: [
       {
         id: "e-1",
@@ -230,8 +237,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.WEBSITE,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 22,
-    daysSinceAvailabilityConfirmation: 22,
+    lastProfileUpdateAt: daysAgo(22),
+    lastAvailabilityConfirmationAt: daysAgo(22),
     experiences: [
       {
         id: "e-1",
@@ -285,8 +292,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.PARTIAL,
     source: TALENT_SOURCE.DIRECT_SIGNUP,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 47,
-    daysSinceAvailabilityConfirmation: 60,
+    lastProfileUpdateAt: daysAgo(47),
+    lastAvailabilityConfirmationAt: daysAgo(60),
     experiences: [
       {
         id: "e-1",
@@ -334,8 +341,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.UNIVERSITY,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 18,
-    daysSinceAvailabilityConfirmation: 18,
+    lastProfileUpdateAt: daysAgo(18),
+    lastAvailabilityConfirmationAt: daysAgo(18),
     experiences: [
       {
         id: "e-1",
@@ -385,8 +392,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.FIELD_OUTREACH,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 9,
-    daysSinceAvailabilityConfirmation: 9,
+    lastProfileUpdateAt: daysAgo(9),
+    lastAvailabilityConfirmationAt: daysAgo(9),
     experiences: [
       {
         id: "e-1",
@@ -434,8 +441,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.INSTAGRAM,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 4,
-    daysSinceAvailabilityConfirmation: 4,
+    lastProfileUpdateAt: daysAgo(4),
+    lastAvailabilityConfirmationAt: daysAgo(4),
     experiences: [
       {
         id: "e-1",
@@ -484,8 +491,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.WHATSAPP,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 14,
-    daysSinceAvailabilityConfirmation: 3,
+    lastProfileUpdateAt: daysAgo(14),
+    lastAvailabilityConfirmationAt: daysAgo(3),
     experiences: [
       {
         id: "e-1",
@@ -535,8 +542,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.SCHOOL,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 28,
-    daysSinceAvailabilityConfirmation: 28,
+    lastProfileUpdateAt: daysAgo(28),
+    lastAvailabilityConfirmationAt: daysAgo(28),
     experiences: [
       {
         id: "e-1",
@@ -583,8 +590,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.IN_REVIEW,
     source: TALENT_SOURCE.RECRUITMENT_CAMPAIGN,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 3,
-    daysSinceAvailabilityConfirmation: 3,
+    lastProfileUpdateAt: daysAgo(3),
+    lastAvailabilityConfirmationAt: daysAgo(3),
     experiences: [
       {
         id: "e-1",
@@ -634,8 +641,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.REFERRAL,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 134,
-    daysSinceAvailabilityConfirmation: 134,
+    lastProfileUpdateAt: daysAgo(134),
+    lastAvailabilityConfirmationAt: daysAgo(134),
     experiences: [
       {
         id: "e-1",
@@ -682,8 +689,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.PARTIAL,
     source: TALENT_SOURCE.FACEBOOK,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 16,
-    daysSinceAvailabilityConfirmation: 16,
+    lastProfileUpdateAt: daysAgo(16),
+    lastAvailabilityConfirmationAt: daysAgo(16),
     experiences: [
       {
         id: "e-1",
@@ -731,8 +738,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.VERIFIED,
     source: TALENT_SOURCE.WEBSITE,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 20,
-    daysSinceAvailabilityConfirmation: 20,
+    lastProfileUpdateAt: daysAgo(20),
+    lastAvailabilityConfirmationAt: daysAgo(20),
     experiences: [
       {
         id: "e-1",
@@ -779,8 +786,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.UNVERIFIED,
     source: TALENT_SOURCE.RECRUITMENT_CAMPAIGN,
     visibility: PROFILE_VISIBILITY.ON_REQUEST,
-    daysSinceProfileUpdate: 76,
-    daysSinceAvailabilityConfirmation: 76,
+    lastProfileUpdateAt: daysAgo(76),
+    lastAvailabilityConfirmationAt: daysAgo(76),
     experiences: [
       {
         id: "e-1",
@@ -827,8 +834,8 @@ const RECORDS: readonly MockTalentRecord[] = [
     verificationStatus: VERIFICATION_STATUS.PARTIAL,
     source: TALENT_SOURCE.FACEBOOK,
     visibility: PROFILE_VISIBILITY.PUBLIC,
-    daysSinceProfileUpdate: 38,
-    daysSinceAvailabilityConfirmation: 38,
+    lastProfileUpdateAt: daysAgo(38),
+    lastAvailabilityConfirmationAt: daysAgo(38),
     experiences: [
       {
         id: "e-1",
@@ -864,8 +871,8 @@ export function toPublicTalent(record: MockTalentRecord, now: Date = NOW): Publi
   const availability = resolveEffectiveAvailability({
     status: record.status,
     declaredAvailability: record.declaredAvailability,
-    lastProfileUpdateAt: daysAgo(record.daysSinceProfileUpdate),
-    lastAvailabilityConfirmationAt: daysAgo(record.daysSinceAvailabilityConfirmation),
+    lastProfileUpdateAt: record.lastProfileUpdateAt,
+    lastAvailabilityConfirmationAt: record.lastAvailabilityConfirmationAt,
     now,
   });
 

@@ -40,10 +40,15 @@ données qui représentent des personnes.
 ### 44.3 Ancre temporelle
 
 `NOW = new Date()` au chargement du module, et `daysAgo(n)` construit les
-fraîcheurs relatives. Conséquence assumée : la fraîcheur du vivier de
-démonstration dérive avec le temps réel, et `REQUIRES_CONFIRMATION` finit par
-s'appliquer à tous les profils. C'est **voulu** — c'est exactement l'état que
-l'on veut observer avant d'avoir une vraie source.
+fraîcheurs relatives. `MockTalentRecord` porte le résultat — une `Date` — et
+non le nombre de jours : le record est une donnée auto-descriptive, et
+`toPublicTalent()` ne dépend plus de l'ancre du fichier.
+
+Conséquence assumée : la fraîcheur du vivier de démonstration dérive avec le
+temps réel, et `REQUIRES_CONFIRMATION` finit par s'appliquer à tous les
+profils. C'est **voulu** — c'est exactement l'état que l'on veut observer
+avant d'avoir une vraie source. Une base réelle stockera des `Date`, pas des
+nombres de jours : c'est ce que le repository attend désormais.
 
 ### 44.4 Interdits
 

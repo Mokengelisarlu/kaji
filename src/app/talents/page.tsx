@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SearchX } from "lucide-react";
+import { SearchX, Users } from "lucide-react";
 
 import { ActiveFilters, TalentFiltersForm } from "@/components/talent/talent-filters";
 import { TalentGrid } from "@/components/talent/talent-grid";
@@ -93,9 +93,23 @@ export default async function TalentsPage({ searchParams }: PageProps<"/talents"
 
               {talents.items.length === 0 ? (
                 <EmptyState
-                  icon={<SearchX className="size-6" />}
-                  title="Aucun profil ne correspond à ces critères"
-                  description="Élargissez la recherche en retirant un filtre ou en ouvrant la fourchette d'expérience. Le vivier grandit chaque semaine : revenez bientôt."
+                  icon={
+                    hasFilters ? (
+                      <SearchX className="size-6" />
+                    ) : (
+                      <Users className="size-6" />
+                    )
+                  }
+                  title={
+                    hasFilters
+                      ? "Aucun profil ne correspond à ces critères"
+                      : "Le vivier est en cours de constitution"
+                  }
+                  description={
+                    hasFilters
+                      ? "Élargissez la recherche en retirant un filtre ou en ouvrant la fourchette d'expérience. Le vivier grandit chaque semaine : revenez bientôt."
+                      : "Aucun talent n'est encore publié. Kaji vérifie chaque profil avant sa mise en ligne, ce qui prend quelques jours. Revenez bientôt."
+                  }
                   action={
                     hasFilters ? (
                       <Link
