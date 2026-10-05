@@ -1,0 +1,46 @@
+"use client";
+
+import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
+
+export function AuthControls({ className }: { className?: string }) {
+  const { isSignedIn } = useUser();
+  return (
+    <div className={className}>
+      {!isSignedIn ? (
+        <>
+          <SignInButton mode="modal">
+            <Button variant="ghost" size="sm">Se connecter</Button>
+          </SignInButton>
+          <SignUpButton mode="modal">
+            <Button size="sm">S&apos;inscrire</Button>
+          </SignUpButton>
+        </>
+      ) : (
+        <UserButton  />
+      )}
+    </div>
+  );
+}
+
+export function AuthControlsMobile({ className }: { className?: string }) {
+  const { isSignedIn } = useUser();
+  return (
+    <div className={className}>
+      {!isSignedIn ? (
+        <>
+          <SignInButton mode="modal">
+            <Button variant="ghost" block>Se connecter</Button>
+          </SignInButton>
+          <SignUpButton mode="modal">
+            <Button block>S&apos;inscrire</Button>
+          </SignUpButton>
+        </>
+      ) : (
+        <div className="flex justify-center">
+          <UserButton  />
+        </div>
+      )}
+    </div>
+  );
+}

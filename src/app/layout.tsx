@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 
@@ -64,14 +65,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fr" className={`${display.variable} ${sans.variable} h-full`}>
       <body className="flex min-h-full flex-col antialiased">
-        <a href="#contenu" className="skip-link">
+        <ClerkProvider>
+          <a href="#contenu" className="skip-link">
           Aller au contenu principal
-        </a>
-        <SiteHeader />
-        <main id="contenu" className="flex-1">
+          </a>
+          <SiteHeader />
+          <main id="contenu" className="flex-1">
           {children}
-        </main>
-        <SiteFooter />
+          </main>
+          <SiteFooter />
+        </ClerkProvider>
       </body>
     </html>
   );

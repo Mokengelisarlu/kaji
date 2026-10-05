@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AuthControls, AuthControlsMobile } from "@/components/layout/site-header-auth";
 import { BRAND, PRIMARY_CTA, PUBLIC_NAV, type NavLink } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -85,6 +86,7 @@ export function SiteHeaderNav() {
         <Button asChild size="sm">
           <Link href={PRIMARY_CTA.employer.href}>{PRIMARY_CTA.employer.label}</Link>
         </Button>
+        <AuthControls className="flex items-center gap-2" />
       </div>
 
       <Button
@@ -116,6 +118,7 @@ export function SiteHeaderNav() {
             <Button asChild block>
               <Link href={PRIMARY_CTA.employer.href}>{PRIMARY_CTA.employer.label}</Link>
             </Button>
+            <AuthControlsMobile className="flex flex-col gap-2" />
           </div>
           <p className="text-subtle-foreground mt-4 text-xs">
             {BRAND.tagline} · {BRAND.operator}
