@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import heroImage from "@/assets/hero01.png";
+import heroImage from "@/assets/Hero.jpeg";
 import section2Image from "@/assets/section2.jpeg";
 import informatiqueImage from "@/assets/opportunities/informatique.webp";
 import ingenierieImage from "@/assets/opportunities/ingenierie.webp";

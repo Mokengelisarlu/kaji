@@ -44,7 +44,7 @@ export const FOOTER_NAV: readonly NavSection[] = [
     title: "Talents",
     links: [
       { href: "/talents", label: "Annuaire des talents" },
-      { href: "/candidats", label: "Créer mon profil" },
+      { href: "/inscription", label: "Créer mon profil" },
       { href: "/opportunites", label: "Opportunités" },
     ],
   },
@@ -75,5 +75,5 @@ export const LEGAL_NAV: readonly NavLink[] = [
 /** Cibles principales de conversion, partagées par le header et les sections CTA. */
 export const PRIMARY_CTA = {
   employer: { href: "/entreprise/inscription", label: "Je cherche un talent" },
-  candidate: { href: "/candidats", label: "Créer mon profil" },
+  candidate: { href: "/inscription", label: "Créer mon profil" },
 } as const;

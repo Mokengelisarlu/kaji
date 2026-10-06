@@ -71,9 +71,9 @@ Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non c
   aucune base. Testable sans DOM.
   **Couvert par 108 tests Vitest** dans `src/**/*.test.ts` (étape 2).
 
-- [x] **M5 — Design system** (`src/components/ui/`, 10 fichiers)
+- [x] **M5 — Design system** (`src/components/ui/`, 11 fichiers)
   Tokens `@theme` (3 échelles de marque + 4 sémantiques, 15 tailles de police,
-  6 rayons, 5 ombres), 27 composants documentés dans `04-design-system.md` §40.3.
+  6 rayons, 5 ombres), 28 composants documentés dans `04-design-system.md` §40.3.
 
 - [x] **M6 — En-tête, pied de page, mentions de marque**
   `Kaji.com` en marque, `Mokengeli SARLU` en opérateur. Lien d'évitement,

@@ -29,7 +29,7 @@ Trois règles, dans cet ordre de priorité.
    lecteur d'écran, sans travail supplémentaire du consumer.
 
 Le catalogue existant est **complet pour le MVP public**. Ajouter un composant est
-un acte documenté (§1.4) : la checklist d'ajout est en §40.7.
+un acte documenté (§1.4) : la checklist d'ajout est en §40.8.
 
 ### 40.2 Arborescence
 
@@ -47,6 +47,7 @@ src/components/
     placeholder-page.tsx  PlaceholderPage, placeholderMetadata
     slot.tsx         Slot
     states.tsx       EmptyState, ErrorState, LoadingState
+    toaster.tsx      Toaster (notifications temporaires)
   layout/        site-header.tsx, site-header-nav.tsx, site-footer.tsx
   talent/        availability-badge, availability-presentation, language-badge,
                  skill-badge, talent-card, talent-filters, talent-grid,
@@ -76,6 +77,7 @@ src/components/
 | `ErrorState` | `ui/states.tsx` | — | Erreur bloquante d'un écran |
 | `LoadingState` | `ui/states.tsx` | `rows` | Chargement, structure réservée |
 | `PlaceholderPage` | `ui/placeholder-page.tsx` | — | Route annoncée mais non construite |
+| `Toaster` | `ui/toaster.tsx` | — | Confirmation temporaire globale, montée dans le layout (§40.7) |
 | `AvailabilityBadge` | `talent/availability-badge.tsx` | par disponibilité effective | Disponibilité calculée (§3.1) |
 | `SkillBadge` | `talent/skill-badge.tsx` | — | Compétence auto-déclarée |
 | `LanguageBadge` | `talent/language-badge.tsx` | auto-déclaré vs non | Langue et niveau auto-déclarés |
@@ -153,7 +155,34 @@ présenter comme un simple choix de couleur détruit sa portée.
   (`lg:grid-cols-[17rem_1fr]`) est un layout de page, pas un composant : elle vit
   dans la page, pas dans `ui/`.
 
-### 40.7 Ajouter un composant : la checklist
+### 40.7 Toasts
+
+Le toast est une **confirmation temporaire**, pas un conteneur de contenu.
+
+- **Un seul `Toaster`**, monté dans `app/layout.tsx`. Une page ne monte jamais
+  le sien : le conteneur vit à la racine, donc le toast survit à la navigation.
+- **Ce qu'il porte** : un résultat déjà produit — « Profil créé. », « Demande
+  enregistrée. » — qui disparaît de lui-même.
+- **Ce qu'il ne porte jamais** : une erreur de champ (§41.6 — l'erreur vit sous
+  le champ, dans le flux du formulaire), l'unique information d'un écran, ni une
+  décision qui engage l'utilisateur : une couleur seule ne dit rien (§43.5).
+- **Tons** : `toast.success` / `toast.info` / `toast.warning` / `toast.error`,
+  sur la même palette que `Alert` (`success-*`, `info-*`, `warning-*`,
+  `danger-*`). Les variables de thème de la bibliothèque sont redéfinies avec
+  les tokens dans `globals.css` (section « Toasts ») : aucun toast ne porte une
+  couleur en dehors de l'échelle.
+- **Déclenchement** côté client uniquement : `import { toast } from "sonner"`,
+  depuis un Client Component.
+- **Annonce** : le conteneur expose `aria-live="polite"` et le libellé
+  « Notifications » ; le bouton de fermeture porte `closeButtonAriaLabel`.
+
+**Une action serveur ne peut pas déclencher de toast.** Elle se termine par un
+`redirect()`, et le client n'apprend jamais le résultat. Le signal voyage dans
+l'URL — `?profil=cree`, consommé par `ProfileCreatedToast`
+(`components/talent/profile-created-toast.tsx`) — puis est retiré de
+`history.replaceState` : un rechargement ne répète pas le message.
+
+### 40.8 Ajouter un composant : la checklist
 
 Un composant n'est dans `ui/` que si les sept points sont satisfaits. Sinon, il
 reste dans son dossier métier.
@@ -170,7 +199,7 @@ reste dans son dossier métier.
 Le composant est ensuite décrit dans le tableau §40.3, avec son fichier et ses
 variantes. Un composant non documenté ici n'existe pas pour les agents suivants.
 
-### 40.8 Ce qui n'existe pas, et pourquoi
+### 40.9 Ce qui n'existe pas, et pourquoi
 
 | Absent | Décision |
 |---|---|
@@ -178,7 +207,7 @@ variantes. Un composant non documenté ici n'existe pas pour les agents suivants
 | Thème sombre | Non demandé par le produit, non implémenté. Les tokens le permettraient ; ce n'est pas une raison pour le construire. |
 | Système de design « dynamique » (tokens pilotés par l'API) | L'identité ne varie pas par client. |
 | Bibliothèque d'icônes maison | `lucide-react` suffit ; les icônes sont décoratives (`aria-hidden`). |
-| Storybook | Coût de maintenance disproportionné pour 27 composants stables. La doc est ce livrable. |
+| Storybook | Coût de maintenance disproportionné pour 28 composants stables. La doc est ce livrable. |
 
 ---
 

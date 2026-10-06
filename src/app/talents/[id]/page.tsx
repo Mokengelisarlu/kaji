@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Lock, Mail, PhoneCall, ShieldCheck } from "lucide-react";
 
+import { ProfileCreatedToast } from "@/components/talent/profile-created-toast";
 import {
   AvailabilitySection,
   CertificationsSection,
@@ -68,8 +69,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function TalentProfilePage({ params }: PageProps<"/talents/[id]">) {
+export default async function TalentProfilePage({
+  params,
+  searchParams,
+}: PageProps<"/talents/[id]">) {
   const { id } = await params;
+  const { profil } = await searchParams;
 
   if (!CANDIDATE_ID_PATTERN.test(id)) {
     notFound();
@@ -82,6 +87,7 @@ export default async function TalentProfilePage({ params }: PageProps<"/talents/
 
   return (
     <>
+      <ProfileCreatedToast created={profil === "cree"} />
       <TalentProfileHeader talent={talent} />
 
       <Section spacing="md">
