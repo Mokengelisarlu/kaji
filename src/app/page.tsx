@@ -2,10 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import heroImage from "@/assets/Hero.jpeg";
 import section2Image from "@/assets/section2.jpeg";
-import informatiqueImage from "@/assets/opportunities/informatique.webp";
-import ingenierieImage from "@/assets/opportunities/ingenierie.webp";
-import gestionImage from "@/assets/opportunities/gestion.webp";
-import santeImage from "@/assets/opportunities/sante.webp";
+import card1Image from "@/assets/card1.jpeg";
+import card2Image from "@/assets/card2.jpeg";
+import card3Image from "@/assets/card3.jpeg";
+import card4Image from "@/assets/card4.jpeg";
 import {
   ArrowRight,
   BadgeCheck,
@@ -87,11 +87,11 @@ const MEDIATION_STEPS = [
   },
 ] as const;
 
-const CATEGORY_IMAGE_BY_SLUG: Readonly<Record<string, typeof informatiqueImage>> = {
-  informatique: informatiqueImage,
-  ingenierie: ingenierieImage,
-  gestion: gestionImage,
-  sante: santeImage,
+const CATEGORY_IMAGE_BY_SLUG: Readonly<Record<string, typeof card1Image>> = {
+  informatique: card4Image,
+  ingenierie: card3Image,
+  gestion: card2Image,
+  sante: card1Image,
 };
 
 /* ------------------------------------------------------------------ */
@@ -285,7 +285,7 @@ export default async function HomePage() {
                   >
                     <span className="relative block aspect-[4/3] overflow-hidden bg-surface-muted">
                       <Image
-                        src={CATEGORY_IMAGE_BY_SLUG[category.slug] ?? informatiqueImage}
+                        src={CATEGORY_IMAGE_BY_SLUG[category.slug] ?? card1Image}
                         alt=""
                         fill
                         sizes="(max-width: 640px) 45vw, (max-width: 1024px) 42vw, 16vw"
@@ -431,7 +431,7 @@ export default async function HomePage() {
 
               <div className="absolute left-1/2 top-1/2 size-[38%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-kaji-500 bg-kaji-900 p-1.5 shadow-lg shadow-kaji-950/60">
                 <Image
-                  src={informatiqueImage}
+                  src={card1Image}
                   alt=""
                   fill
                   sizes="(max-width: 1024px) 38vw, 12rem"
