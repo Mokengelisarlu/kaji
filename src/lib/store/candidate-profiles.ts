@@ -6,7 +6,7 @@ import type {
   PublicTalentProfile,
   Skill,
 } from "@/lib/domain/talent";
-import type { ProfileVisibility } from "@/lib/domain/enums";
+import type { AvailabilityType, ContractType, ProfileVisibility } from "@/lib/domain/enums";
 import {
   AVAILABILITY_TYPE,
   CONTRACT_TYPE,
@@ -40,6 +40,28 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/**
+ * Champs modifiables par le candidat lui-même. `clerkUserId` est exclu :
+ * l'appartenance est vérifiée séparément par la requête d'écriture.
+ */
+export type UpdateCandidateProfileInput = Omit<CreateCandidateProfileInput, "clerkUserId">;
+
+/**
+ * Patch ciblé sur un ou plusieurs blocs du profil (dashboard).
+ * Seules les propriétés fournies sont mises à jour ; `undefined` = inchangé.
+ */
+export type CandidateProfileSectionPatch = {
+  readonly summary?: string;
+  readonly skills?: readonly Omit<Skill, "id">[];
+  readonly languages?: readonly LanguageSkill[];
+  readonly experiences?: readonly Omit<Experience, "id">[];
+  readonly education?: readonly Omit<Education, "id">[];
+  readonly certifications?: readonly Omit<Certification, "id">[];
+  readonly declaredAvailability?: AvailabilityType;
+  readonly desiredContractTypes?: readonly ContractType[];
+  readonly isRemoteEligible?: boolean;
+};
 
 export type CreateCandidateProfileInput = {
   readonly clerkUserId?: string;

@@ -5,9 +5,9 @@ import type {
   TalentDirectoryFacets,
   TalentFilters,
 } from "@/lib/domain/talent";
-import { normalizeLabel, scoreTalent } from "@/lib/domain/matching";
 import { EFFECTIVE_AVAILABILITY } from "@/lib/domain/enums";
 import type { TalentRepository } from "./talent-repository";
+import { applyDirectoryFilters } from "./directory-engine";
 import { MOCK_TALENTS, toPublicTalent, MOCK_RECORDS, isPublishable } from "@/lib/mock/talents";
 import type { MockTalentRecord } from "@/lib/mock/talents";
 import { LOCATIONS, TALENT_CATEGORIES, TALENT_DOMAINS } from "@/lib/mock/referentials";
@@ -15,33 +15,16 @@ import { LOCATIONS, TALENT_CATEGORIES, TALENT_DOMAINS } from "@/lib/mock/referen
 /**
  * Implémentation `TalentRepository` sur le vivier de démonstration.
  *
- * Elle respecte le même contrat que la future implémentation Drizzle : filtrage,
- * tri, pagination et facettes. Le filtrage est synchrone et en mémoire ; il
- * s'agira de `WHERE` + index SQL le jour venu. Le tri « relevance » utilise
- * le moteur de matching rule-based (§8), ce qui garantit que le tri de
- * l'annuaire et celui d'une demande de recrutement ne divergent jamais.
+ * Elle respecte le même contrat que l'implémentation Drizzle : filtrage, tri,
+ * pagination et facettes. Le filtrage, le tri et la pagination sont délégués au
+ * moteur partagé `directory-engine`, identique pour toutes les sources. Le jour
+ * où l'on passe en `WHERE` + index SQL, seul `DrizzleTalentRepository` change.
  */
 export class MockTalentRepository implements TalentRepository {
   constructor(private readonly talents: readonly PublicTalent[] = MOCK_TALENTS) {}
 
   async list(filters: TalentFilters): Promise<PaginatedTalents> {
-    const filtered = this.talents.filter((talent) => this.matches(talent, filters));
-    const sorted = this.sort(filtered, filters);
-
-    const total = sorted.length;
-    const totalPages = Math.max(1, Math.ceil(total / filters.pageSize));
-    // Une page au-delà de la dernière renvoie la dernière page : un lien
-    // d'archive ancienne mène à du contenu lisible, pas à une page blanche.
-    const page = Math.min(filters.page, totalPages);
-    const start = (page - 1) * filters.pageSize;
-
-    return {
-      items: sorted.slice(start, start + filters.pageSize),
-      total,
-      page,
-      pageSize: filters.pageSize,
-      totalPages,
-    };
+    return applyDirectoryFilters(this.talents, filters);
   }
 
   async findPublishedById(candidateId: string): Promise<PublicTalent | null> {
@@ -95,122 +78,6 @@ export class MockTalentRepository implements TalentRepository {
   /* ---------------------------------------------------------------- */
   /* Interne                                                           */
   /* ---------------------------------------------------------------- */
-
-  private matches(talent: PublicTalent, filters: TalentFilters): boolean {
-    if (filters.verifiedOnly && !talent.isVerified) {
-      return false;
-    }
-
-    if (filters.categorySlugs.length > 0 && !filters.categorySlugs.includes(talent.categorySlug)) {
-      return false;
-    }
-
-    if (filters.domainSlugs.length > 0) {
-      const matchesDomain = talent.domainSlugs.some((slug) => filters.domainSlugs.includes(slug));
-      if (!matchesDomain) {
-        return false;
-      }
-    }
-
-    if (filters.citySlugs.length > 0 && !filters.citySlugs.includes(talent.location.citySlug)) {
-      return false;
-    }
-
-    const [minExperience, maxExperience] = filters.experience;
-    if (talent.yearsOfExperience < minExperience || talent.yearsOfExperience > maxExperience) {
-      return false;
-    }
-
-    if (filters.poolKinds.length > 0 && !filters.poolKinds.includes(talent.poolKind)) {
-      return false;
-    }
-
-    if (filters.availabilities.length > 0 && !filters.availabilities.includes(talent.availability)) {
-      return false;
-    }
-
-    if (filters.contractTypes.length > 0) {
-      const matchesContract = talent.desiredContractTypes.some((type) =>
-        filters.contractTypes.includes(type),
-      );
-      if (!matchesContract) {
-        return false;
-      }
-    }
-
-    if (filters.languageCodes.length > 0) {
-      const owned = new Set(talent.languages.map((language) => language.code));
-      const matchesLanguage = filters.languageCodes.some((code) => owned.has(code));
-      if (!matchesLanguage) {
-        return false;
-      }
-    }
-
-    if (filters.skillLabels.length > 0) {
-      const owned = new Set(talent.skills.map((skill) => normalizeLabel(skill.label)));
-      const matchesSkill = filters.skillLabels.some((label) => owned.has(normalizeLabel(label)));
-      if (!matchesSkill) {
-        return false;
-      }
-    }
-
-    if (filters.query.trim().length >= 2) {
-      const haystack = normalizeLabel(
-        [
-          talent.fullName,
-          talent.headline,
-          talent.summary,
-          talent.categoryLabel,
-          talent.skills.map((skill) => skill.label).join(" "),
-        ].join(" "),
-      );
-      const terms = normalizeLabel(filters.query)
-        .split(/\s+/)
-        .filter((term) => term.length >= 2);
-      const matchesQuery = terms.every((term) => haystack.includes(term));
-      if (!matchesQuery) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  private sort(
-    talents: readonly PublicTalent[],
-    filters: TalentFilters,
-  ): readonly PublicTalent[] {
-    switch (filters.sort) {
-      case "experience_desc":
-        return [...talents].sort((a, b) => b.yearsOfExperience - a.yearsOfExperience);
-      case "experience_asc":
-        return [...talents].sort((a, b) => a.yearsOfExperience - b.yearsOfExperience);
-      case "recent": {
-        // Un profil « récent » est avant tout un profil à jour : les plus
-        // frais d'actualisation d'abord. Le stock mock n'expose pas la date
-        // brute, on se limite donc à un tri alphabétique stable et documenté.
-        return [...talents].sort((a, b) => a.fullName.localeCompare(b.fullName, "fr"));
-      }
-      case "relevance":
-      default: {
-        const criteria = {
-          query: filters.query,
-          categorySlugs: filters.categorySlugs,
-          domainSlugs: filters.domainSlugs,
-          citySlugs: filters.citySlugs,
-          requiredSkills: filters.skillLabels,
-          requiredLanguages: filters.languageCodes,
-          contractTypes: filters.contractTypes,
-        };
-        const scores = new Map(
-          talents.map((talent) => [talent.candidateId, scoreTalent(talent, criteria).score]),
-        );
-        return [...talents].sort(
-          (a, b) => (scores.get(b.candidateId) ?? 0) - (scores.get(a.candidateId) ?? 0),
-        );
-      }
-    }
-  }
 }
 
 /**

@@ -15,10 +15,11 @@ export async function submitCandidateProfile(
   
   const result = await evaluateCandidateProfileSubmission(formData, userId ?? undefined);
   
-  if (result.status === "success" && result.talentUrl) {
-    // `?profil=cree` déclenche l'accusé de réception sur la fiche
-    // (`ProfileCreatedToast`) : l'action ne peut pas toaster elle-même.
-    redirect(`${result.talentUrl}?profil=cree`);
+  if (result.status === "success") {
+    // Retour au tableau de bord : il affiche le profil fraîchement créé.
+    // `?profil=cree` déclenche l'accusé de réception (`ProfileCreatedToast`) :
+    // l'action ne peut pas toaster elle-même.
+    redirect("/candidat/dashboard?profil=cree");
   }
   
   return result;

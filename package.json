@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS=--no-network-family-autoselection next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_OPTIONS=--no-network-family-autoselection next start",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "next typegen && tsc --noEmit",
     "typegen": "next typegen",
+    "db:generate": "NODE_OPTIONS=--no-network-family-autoselection drizzle-kit generate",
+    "db:migrate": "NODE_OPTIONS=--no-network-family-autoselection drizzle-kit migrate",
+    "db:push": "NODE_OPTIONS=--no-network-family-autoselection drizzle-kit push",
+    "db:studio": "NODE_OPTIONS=--no-network-family-autoselection drizzle-kit studio",
     "check": "pnpm lint && pnpm test && pnpm typecheck && pnpm build"
   },
   "dependencies": {
@@ -33,11 +37,13 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.19.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
+    "pg": "^8.23.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.2"

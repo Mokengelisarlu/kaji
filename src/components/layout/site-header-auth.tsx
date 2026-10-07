@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 
@@ -17,7 +18,12 @@ export function AuthControls({ className }: { className?: string }) {
           </SignUpButton>
         </>
       ) : (
-        <UserButton  />
+        <>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/candidat/dashboard">Tableau de bord</Link>
+          </Button>
+          <UserButton  />
+        </>
       )}
     </div>
   );
@@ -37,8 +43,13 @@ export function AuthControlsMobile({ className }: { className?: string }) {
           </SignUpButton>
         </>
       ) : (
-        <div className="flex justify-center">
-          <UserButton  />
+        <div className="flex flex-col gap-2">
+          <Button asChild variant="ghost" block>
+            <Link href="/candidat/dashboard">Tableau de bord</Link>
+          </Button>
+          <div className="flex justify-center">
+            <UserButton  />
+          </div>
         </div>
       )}
     </div>

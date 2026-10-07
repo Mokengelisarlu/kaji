@@ -81,3 +81,39 @@ export const candidateProfileSchema = z.object({
 
 export type CandidateProfileFormValues = z.infer<typeof candidateProfileSchema>;
 export type CandidateProfileSubmissionInput = CandidateProfileFormValues;
+
+/* ------------------------------------------------------------------ */
+/* Blocs d'édition ciblée (dashboard)                                  */
+/* ------------------------------------------------------------------ */
+
+/** Résumé professionnel, bloc seul. */
+export const summaryBlockSchema = z.object({
+  summary: requiredText("Le résumé", 4000),
+});
+
+/** Disponibilité déclarée + contrats + télétravail. */
+export const availabilityBlockSchema = z.object({
+  declaredAvailability: z.enum(Object.values(AVAILABILITY_TYPE)).optional(),
+  desiredContractTypes: z.array(z.enum(Object.values(CONTRACT_TYPE))).optional(),
+  isRemoteEligible: z.boolean().optional().default(true),
+});
+
+export const skillsBlockSchema = z.object({
+  skills: z.array(skillSchema).min(1, "Au moins une compétence est requise."),
+});
+
+export const languagesBlockSchema = z.object({
+  languages: z.array(languageSchema).min(1, "Au moins une langue est requise."),
+});
+
+export const experiencesBlockSchema = z.object({
+  experiences: z.array(experienceSchema).optional().default([]),
+});
+
+export const educationBlockSchema = z.object({
+  education: z.array(educationSchema).optional().default([]),
+});
+
+export const certificationsBlockSchema = z.object({
+  certifications: z.array(certificationSchema).optional().default([]),
+});
