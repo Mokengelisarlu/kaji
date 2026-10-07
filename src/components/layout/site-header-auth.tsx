@@ -10,10 +10,10 @@ export function AuthControls({ className }: { className?: string }) {
     <div className={className}>
       {!isSignedIn ? (
         <>
-          <SignInButton mode="modal">
+          <SignInButton mode="modal" fallbackRedirectUrl="/candidat/dashboard">
             <Button variant="ghost" size="sm">Se connecter</Button>
           </SignInButton>
-          <SignUpButton mode="modal">
+          <SignUpButton mode="modal" fallbackRedirectUrl="/candidat/onboarding">
             <Button size="sm">S&apos;inscrire</Button>
           </SignUpButton>
         </>
@@ -35,10 +35,10 @@ export function AuthControlsMobile({ className }: { className?: string }) {
     <div className={className}>
       {!isSignedIn ? (
         <>
-          <SignInButton mode="modal">
+          <SignInButton mode="modal" fallbackRedirectUrl="/candidat/dashboard">
             <Button variant="ghost" block>Se connecter</Button>
           </SignInButton>
-          <SignUpButton mode="modal">
+          <SignUpButton mode="modal" fallbackRedirectUrl="/candidat/onboarding">
             <Button block>S&apos;inscrire</Button>
           </SignUpButton>
         </>

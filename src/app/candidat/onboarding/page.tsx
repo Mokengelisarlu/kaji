@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { CandidateProfileForm } from "./candidate-profile-form";
+import { DraftReminder } from "./draft-reminder";
 
 export default async function CandidatOnboardingPage() {
   const { userId } = await auth();
@@ -17,6 +18,7 @@ export default async function CandidatOnboardingPage() {
           Complétez votre profil pour apparaître dans le vivier de talents Kaji.
         </p>
       </div>
+      <DraftReminder />
       <CandidateProfileForm />
     </div>
   );
