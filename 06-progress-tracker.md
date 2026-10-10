@@ -84,7 +84,7 @@ Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non c
 
 - [x] **M7 — Pages légales et institutionnelles** — *partiellement livré*
   Livré : `/mentions-legales`, `/confidentialite` (en `index: true`),
-  `/a-propos`, `/entreprises`, `/opportunites`.
+  `/a-propos`, `/entreprise`, `/opportunites`.
   Restent en `PlaceholderPage` : `/candidats`, `/entreprise/inscription`,
   `/entreprise/demandes` — les deux derniers supposent l'authentification et la
   persistance de l'étape 5, pas une rédaction.
@@ -309,7 +309,7 @@ un état valide.
 11. Livrer M8 (formulaire de contact + demande de profil). C'est le levier
     produit le plus rentable : sans lui, le site ne convertit pas.
 12. Livrer M7 (pages légales). Prérequis réglementaire, pas une option.
-13. Écrire les pages institutionnelles (`/a-propos`, `/entreprises`,
+13. Écrire les pages institutionnelles (`/a-propos`, `/entreprise`,
     `/opportunites`) pour qu'ils cessent d'être des placeholders.
 
 ### Étape 5 — Infrastructure

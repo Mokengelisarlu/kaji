@@ -31,7 +31,7 @@ est annoncé honnêtement par `PlaceholderPage`.
 | `EC-05` | À propos | `/a-propos` | **Livré** | Contenu éditorial, `index: true` |
 | `EC-06` | Créer mon profil | `/candidats` | Placeholder | **Parcours candidat, étape 2** |
 | `EC-07` | Opportunités | `/opportunites` | **Livré** | Annonce l'absence d'opportunités, `noindex` |
-| `EC-08` | Entreprises | `/entreprises` | **Livré** | Entrée du parcours entreprise vers `EC-11` |
+| `EC-08` | Entreprises | `/entreprise` | **Livré** | Entrée du parcours entreprise vers `EC-11` |
 | `EC-09` | Créer un compte entreprise | `/entreprise/inscription` | Placeholder | **Parcours entreprise, étape 2** |
 | `EC-10` | Mes demandes de recrutement | `/entreprise/demandes` | Placeholder | Espace authentifié |
 | `EC-11` | Contact / demande de profil | `/contact` | **Livré, livraison non branchée** | Formulaire validé ; transport absent |
@@ -63,7 +63,7 @@ Navigation principale, en-tête (`site-header-nav.tsx`, libellés dans `site.ts`
 | Logo Kaji.com | `/` | `EC-01` |
 | Talents | `/talents` | `EC-02` |
 | Opportunités | `/opportunites` | `EC-07` |
-| Entreprises | `/entreprises` | `EC-08` |
+| Entreprises | `/entreprise` | `EC-08` |
 | À propos | `/a-propos` | `EC-05` |
 | Contact | `/contact` | `EC-11` |
 | **Je cherche un talent** (primaire) | `/entreprise/inscription` | `EC-09` |
@@ -368,11 +368,11 @@ actions : parcourir les talents, revenir à l'accueil.
 
 ### 64.2 EC-05, EC-08, EC-07 — Pages de contenu
 
-`/a-propos`, `/entreprises`, `/opportunites`. Contenu éditorial : la
+`/a-propos`, `/entreprise`, `/opportunites`. Contenu éditorial : la
 démonstration du modèle, le refus du vocabulaire « marketplace », les
 catégories d'opportunités. En `PlaceholderPage` aujourd'hui.
 
-`/entreprises` est la **page d'entrée du parcours entreprise** : elle doit
+`/entreprise` est la **page d'entrée du parcours entreprise** : elle doit
 expliquer le modèle et refuser le vocabulaire « marketplace ». L'écart est
 assumé : la règle est écrite, l'écran qui devrait l'appliquer n'existe pas.
 
@@ -483,7 +483,7 @@ EC-09 /entreprise/inscription  Créer un compte entreprise   ← BLOQUÉ
 **Par la découverte** — le chemin qu'un visiteur prend s'il veut d'abord voir :
 
 ```
-EC-08 /entreprises          Comprendre le modèle
+EC-08 /entreprise          Comprendre le modèle
       ↓
 EC-01 /                    Le vivier, les engagements, les profils
       ↓

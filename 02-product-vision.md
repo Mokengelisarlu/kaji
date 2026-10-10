@@ -827,7 +827,7 @@ durable, vérifiée, et maîtrisée par le candidat.
 
 | # | Étape | Ce que fait l'entreprise | Ce que fait Kaji |
 |---|---|---|---|
-| 1 | Découverte | Arrive sur `/entreprises` ou `/` | Explique le modèle, refuse le vocabulaire « marketplace » |
+| 1 | Découverte | Arrive sur `/entreprise` ou `/` | Explique le modèle, refuse le vocabulaire « marketplace » |
 | 2 | Compte | Crée un compte entreprise, déclare sa société | Vérifie l'entreprise (KYC simplifié) |
 | 3 | Besoin | Dépose un besoin : poste, mission, compétences, localisation, urgence, contrat, budget | Analyse, qualifie, reformule si nécessaire |
 | 4 | Recherche | Suit la demande | Constitue la shortlist via le moteur §8 + arbitrage humain |

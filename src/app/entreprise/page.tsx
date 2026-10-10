@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight, UserSearch } from "lucide-react";
 
+import { TalentSlider } from "@/components/talent/talent-slider";
 import {
-  PageBanner,
   ProseBody,
   type ProseSection,
 } from "@/components/ui/content-page";
 import { Button } from "@/components/ui/button";
 import { Container, Section } from "@/components/ui/layout";
+import { getFeaturedTalents, getTalentPoolStats } from "@/lib/use-cases/talent";
 import { BRAND } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Entreprises",
   description: `Confier un recrutement à ${BRAND.name} : comment se déroule une demande, ce que l’entreprise reçoit, et ce qu’elle ne recevra jamais.`,
-  alternates: { canonical: "/entreprises" },
+  alternates: { canonical: "/entreprise" },
 };
 
 const SECTIONS: readonly ProseSection[] = [
@@ -109,14 +111,76 @@ const SECTIONS: readonly ProseSection[] = [
   },
 ];
 
-export default function BusinessesPage() {
+export default async function BusinessesPage() {
+  const [featuredTalents, poolStats] = await Promise.all([
+    getFeaturedTalents(3),
+    getTalentPoolStats(),
+  ]);
+
   return (
     <>
-      <PageBanner
-        eyebrow="Entreprises"
-        title="Confier une recherche, pas publier une annonce"
-        description={`Le parcours entreprise chez ${BRAND.name} : ce que vous déposez, ce que vous recevez, et ce que vous n’obtiendrez pas.`}
-      />
+      {/* ---------------------------------------------------------------- */}
+      {/* Hero                                                             */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="border-border overflow-hidden border-b bg-surface">
+        <Container
+          size="wide"
+          className="grid items-center gap-10 pt-12 sm:pt-16 lg:grid-cols-2 lg:gap-12 lg:pt-20"
+        >
+          <div className="flex flex-col items-start gap-5 py-4 sm:gap-6 lg:py-10">
+            <p className="bg-kaji-50 text-kaji-700 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-2xs font-semibold tracking-[0.12em] uppercase">
+              <UserSearch aria-hidden="true" className="size-3.5" />
+              Recrutement · Médiation humaine
+            </p>
+
+            <h1 className="max-w-xl text-4xl sm:text-5xl lg:text-6xl">
+              À la recherche d’un talent ?
+            </h1>
+
+            <p className="text-muted-foreground max-w-xl text-base sm:text-lg">
+              Notre annuaire croise des profils vérifiés et des disponibilités
+              effectives, prêts à pourvoir le poste que vous recherchez. Créez
+              un compte pour les consulter et déposer votre besoin.
+            </p>
+
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+              <Button asChild size="lg">
+                <Link href="/inscription">
+                  Créer un compte
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="secondary">
+                <Link href="/talents">Parcourir le vivier</Link>
+              </Button>
+            </div>
+
+            <dl className="border-border text-muted-foreground mt-3 grid w-full max-w-lg grid-cols-3 gap-3 border-t pt-5 text-sm">
+              <div className="flex flex-col gap-0.5">
+                <dt className="sr-only">Profils publiés</dt>
+                <dd className="text-foreground text-xl font-semibold">{poolStats.totalPublished}</dd>
+                <dd className="text-xs">profils publiés</dd>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <dt className="sr-only">Profils vérifiés</dt>
+                <dd className="text-foreground text-xl font-semibold">
+                  {poolStats.verifiedRatio}&nbsp;%
+                </dd>
+                <dd className="text-xs">vérifiés par l’équipe</dd>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <dt className="sr-only">Profils disponibles</dt>
+                <dd className="text-foreground text-xl font-semibold">
+                  {poolStats.availableCount}
+                </dd>
+                <dd className="text-xs">disponibles maintenant</dd>
+              </div>
+            </dl>
+          </div>
+
+          <TalentSlider talents={featuredTalents} />
+        </Container>
+      </section>
 
       <Section spacing="md">
         <Container size="narrow">

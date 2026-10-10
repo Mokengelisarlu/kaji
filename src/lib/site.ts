@@ -33,7 +33,7 @@ export type NavSection = {
 export const PUBLIC_NAV: readonly NavLink[] = [
   { href: "/talents", label: "Talents" },
   { href: "/opportunites", label: "Opportunités" },
-  { href: "/entreprises", label: "Entreprises" },
+  { href: "/entreprise", label: "Entreprises" },
   { href: "/a-propos", label: "À propos" },
   { href: "/contact", label: "Contact" },
 ];
@@ -53,7 +53,7 @@ export const FOOTER_NAV: readonly NavSection[] = [
     links: [
       { href: "/entreprise/inscription", label: "Créer un compte entreprise" },
       { href: "/contact?objet=besoin", label: "Déposer un besoin" },
-      { href: "/entreprises", label: "Confier un recrutement" },
+      { href: "/entreprise", label: "Confier un recrutement" },
     ],
   },
   {
