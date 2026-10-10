@@ -1,7 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Award, Briefcase, CheckCircle2, MapPin, Pencil, Users } from "lucide-react";
+import { Award, Briefcase, CheckCircle2, Mail, MapPin, Pencil, Phone, Users } from "lucide-react";
 import { BlockCardEditor } from "@/components/candidat/block-card-editor";
 import { ProfileCreatedToast } from "@/components/talent/profile-created-toast";
 import {
@@ -43,6 +43,12 @@ export default async function CandidatDashboardPage({ searchParams }: PageProps<
   if (!profile) {
     redirect("/candidat/onboarding");
   }
+
+  const user = await currentUser();
+  const email =
+    profile.email ??
+    user?.emailAddresses.find((address) => address.id === user.primaryEmailAddressId)?.emailAddress ??
+    user?.emailAddresses[0]?.emailAddress;
 
   const { profil, bloc } = await searchParams;
 
@@ -108,7 +114,7 @@ export default async function CandidatDashboardPage({ searchParams }: PageProps<
               </div>
             </div>
 
-            <dl className="border-border text-muted-foreground grid grid-cols-1 gap-4 border-t pt-6 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <dl className="border-border text-muted-foreground grid grid-cols-1 gap-4 border-t pt-6 text-sm sm:grid-cols-2 lg:grid-cols-3">
               <Fact icon={<Briefcase aria-hidden="true" />} term="Catégorie">
                 {profile.categoryLabel}
               </Fact>
@@ -120,6 +126,12 @@ export default async function CandidatDashboardPage({ searchParams }: PageProps<
               </Fact>
               <Fact icon={<Award aria-hidden="true" />} term="Domaines">
                 {domains || "—"}
+              </Fact>
+              <Fact icon={<Mail aria-hidden="true" />} term="E-mail">
+                {email ?? "—"}
+              </Fact>
+              <Fact icon={<Phone aria-hidden="true" />} term="Téléphone">
+                {profile.phone ?? "—"}
               </Fact>
             </dl>
           </div>

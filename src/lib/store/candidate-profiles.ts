@@ -17,6 +17,10 @@ import {
 
 export type StoredCandidateProfile = PublicTalentProfile & {
   readonly clerkUserId?: string;
+  /** Contact privé, jamais exposé sur la fiche publique (§9). */
+  readonly email?: string;
+  /** Contact privé, jamais exposé sur la fiche publique (§9). */
+  readonly phone?: string;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly profileVisibility: ProfileVisibility;
@@ -65,6 +69,8 @@ export type CandidateProfileSectionPatch = {
 
 export type CreateCandidateProfileInput = {
   readonly clerkUserId?: string;
+  readonly email?: string;
+  readonly phone?: string;
   readonly fullName: string;
   readonly headline: string;
   readonly categoryLabel: string;
@@ -129,6 +135,8 @@ export function createCandidateProfile(input: CreateCandidateProfileInput): Stor
       ...cert,
     })),
     clerkUserId: input.clerkUserId,
+    email: input.email,
+    phone: input.phone,
     createdAt: now,
     updatedAt: now,
     profileVisibility: input.profileVisibility,

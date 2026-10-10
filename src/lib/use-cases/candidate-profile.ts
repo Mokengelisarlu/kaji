@@ -193,6 +193,7 @@ function extractCandidateProfileInput(formData: FormData): CandidateProfileSubmi
 
   return {
     fullName: computedFullName || (raw.fullName as string),
+    phone: (raw.telephone as string) || undefined,
     headline: raw.headline as string,
     categoryLabel: raw.categoryLabel as string,
     domainLabels: raw.domainLabels as string,
@@ -224,6 +225,7 @@ function errorsFromZod(issues: Array<{ path: (string | number | symbol)[]; messa
 export async function evaluateCandidateProfileSubmission(
   formData: FormData,
   clerkUserId?: string,
+  email?: string,
 ): Promise<CandidateProfileState> {
   const parsed = candidateProfileSchema.safeParse(extractCandidateProfileInput(formData));
   if (!parsed.success) {
@@ -234,6 +236,8 @@ export async function evaluateCandidateProfileSubmission(
     const profile = await createCandidateProfileInDb({
       ...parsed.data,
       clerkUserId,
+      email,
+      phone: parsed.data.phone,
       domainLabels: parseCommaSeparated(parsed.data.domainLabels as string | undefined),
       skills: parsed.data.skills.map((s: any) => ({ label: s.label, level: s.level, yearsOfPractice: s.yearsOfPractice === "" ? undefined : (typeof s.yearsOfPractice === 'number' ? s.yearsOfPractice : (s.yearsOfPractice ? Number(s.yearsOfPractice) : undefined)) })) as any,
       languages: parsed.data.languages as any,
@@ -274,6 +278,7 @@ export async function evaluateCandidateProfileUpdate(
   try {
     const profile = await updateCandidateProfile(candidateId, clerkUserId, {
       fullName: parsed.data.fullName,
+      phone: parsed.data.phone,
       headline: parsed.data.headline,
       categoryLabel: parsed.data.categoryLabel,
       domainLabels: parseCommaSeparated(parsed.data.domainLabels as string | undefined),
@@ -284,6 +289,9 @@ export async function evaluateCandidateProfileUpdate(
       summary: parsed.data.summary,
       skills: parsed.data.skills.map((s) => ({ label: s.label, level: s.level as 1 | 2 | 3 | 4 | 5, yearsOfPractice: s.yearsOfPractice })),
       languages: parsed.data.languages,
+      experiences: parsed.data.experiences,
+      education: parsed.data.education,
+      certifications: parsed.data.certifications,
       profileVisibility: parsed.data.profileVisibility,
       declaredAvailability: parsed.data.declaredAvailability,
       desiredContractTypes: parsed.data.desiredContractTypes,

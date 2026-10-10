@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Alert } from "@/components/ui/alert";
@@ -19,6 +19,13 @@ export default async function CandidatProfilPage({ searchParams }: PageProps<"/c
   if (!profile) {
     redirect("/candidat/onboarding");
   }
+
+  const user = await currentUser();
+  const email =
+    profile.email ??
+    user?.emailAddresses.find((address) => address.id === user.primaryEmailAddressId)?.emailAddress ??
+    user?.emailAddresses[0]?.emailAddress ??
+    "";
 
   const { profil } = await searchParams;
 
@@ -50,6 +57,8 @@ export default async function CandidatProfilPage({ searchParams }: PageProps<"/c
       <EditProfileForm
         initial={{
           fullName: profile.fullName,
+          email,
+          phone: profile.phone ?? "",
           headline: profile.headline,
           categoryLabel: profile.categoryLabel,
           domainLabels: profile.domainSlugs
@@ -69,6 +78,29 @@ export default async function CandidatProfilPage({ searchParams }: PageProps<"/c
             yearsOfPractice: Number.isFinite(yearsOfPractice) ? String(yearsOfPractice) : "",
           })),
           languages: profile.languages.map(({ code, level }) => ({ code, level })),
+          experiences: profile.experiences.map((exp) => ({
+            title: exp.title,
+            organization: exp.organization,
+            location: exp.location ?? "",
+            startDate: exp.startDate,
+            isCurrent: exp.isCurrent,
+            endDate: exp.endDate ?? "",
+            summary: exp.summary ?? "",
+            achievements: exp.achievements.join("\n"),
+          })),
+          education: profile.education.map((edu) => ({
+            diploma: edu.diploma,
+            school: edu.school,
+            field: edu.field ?? "",
+            startYear: edu.startYear !== undefined ? String(edu.startYear) : "",
+            endYear: edu.endYear !== undefined ? String(edu.endYear) : "",
+          })),
+          certifications: profile.certifications.map((cert) => ({
+            name: cert.name,
+            issuer: cert.issuer,
+            issuedYear: cert.issuedYear !== undefined ? String(cert.issuedYear) : "",
+            expiresAt: cert.expiresAt ?? "",
+          })),
         }}
       />
 

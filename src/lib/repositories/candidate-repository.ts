@@ -45,6 +45,8 @@ function toStoredProfile(row: CandidateProfileRow): StoredCandidateProfile {
     education: row.education as StoredCandidateProfile["education"],
     certifications: row.certifications as StoredCandidateProfile["certifications"],
     clerkUserId: row.clerkUserId ?? undefined,
+    email: row.email ?? undefined,
+    phone: row.phone ?? undefined,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     profileVisibility: row.profileVisibility,
@@ -62,6 +64,8 @@ export async function createCandidateProfileInDb(input: CreateCandidateProfileIn
     .values({
       candidateId,
       clerkUserId: input.clerkUserId,
+      email: input.email,
+      phone: input.phone,
       fullName: input.fullName,
       headline: input.headline,
       categorySlug,
@@ -117,9 +121,12 @@ export async function getCandidateProfileByClerkUserId(clerkUserId: string): Pro
  *
  * La clause `where` vérifie simultanément l'identité (`candidateId`) et
  * l'appartenance (`clerkUserId`) : aucun utilisateur connecté ne peut écrire
- * sur la fiche d'un autre. Les champs de parcours (expériences, formations,
- * certifications) et les champs internes (poolKind, source, isVerified,
+ * sur la fiche d'un autre. Les champs internes (poolKind, source, isVerified,
  * availability) sont volontairement exclus : d'autres écrans les gèrent.
+ * Les blocs de parcours (expériences, formations, certifications) sont mis à
+ * jour uniquement lorsqu'ils sont fournis : le formulaire d'édition complète
+ * les gère, les éditeurs ciblés du tableau de bord passent par
+ * `updateCandidateProfileSections`.
  */
 export async function updateCandidateProfile(
   candidateId: string,
@@ -130,27 +137,47 @@ export async function updateCandidateProfile(
   const categorySlug = slugify(input.categoryLabel);
   const domainSlugs = (input.domainLabels ?? []).map(slugify);
 
+  const values: Partial<typeof candidateProfiles.$inferInsert> = {
+    fullName: input.fullName,
+    headline: input.headline,
+    categorySlug,
+    categoryLabel: input.categoryLabel,
+    domainSlugs: toJson(domainSlugs),
+    citySlug: slugify(input.city),
+    city: input.city,
+    country: input.country || "République Démocratique du Congo",
+    isRemoteEligible: input.isRemoteEligible ?? true,
+    yearsOfExperience: input.yearsOfExperience,
+    skills: toJson(input.skills.map((s, i) => ({ id: `${candidateId}-skill-${i}`, ...s }))),
+    languages: toJson(input.languages.map((l) => ({ code: l.code, level: l.level }))),
+    declaredAvailability: input.declaredAvailability ?? "OPEN_TO_OPPORTUNITIES",
+    desiredContractTypes: toJson((input.desiredContractTypes ?? ["CDI"]) as string[]),
+    summary: input.summary,
+    profileVisibility: input.profileVisibility,
+    updatedAt: now,
+  };
+
+  // L'email provient de Clerk et le téléphone d'un champ optionnel : on ne
+  // remplace jamais une valeur existante par une absence.
+  if (input.email !== undefined) {
+    values.email = input.email;
+  }
+  if (input.phone !== undefined) {
+    values.phone = input.phone;
+  }
+  if (input.experiences !== undefined) {
+    values.experiences = toJson(input.experiences.map((e, i) => ({ id: `${candidateId}-exp-${i}`, ...e })));
+  }
+  if (input.education !== undefined) {
+    values.education = toJson(input.education.map((e, i) => ({ id: `${candidateId}-edu-${i}`, ...e })));
+  }
+  if (input.certifications !== undefined) {
+    values.certifications = toJson(input.certifications.map((c, i) => ({ id: `${candidateId}-cert-${i}`, ...c })));
+  }
+
   const updated = await db
     .update(candidateProfiles)
-    .set({
-      fullName: input.fullName,
-      headline: input.headline,
-      categorySlug,
-      categoryLabel: input.categoryLabel,
-      domainSlugs: toJson(domainSlugs),
-      citySlug: slugify(input.city),
-      city: input.city,
-      country: input.country || "République Démocratique du Congo",
-      isRemoteEligible: input.isRemoteEligible ?? true,
-      yearsOfExperience: input.yearsOfExperience,
-      skills: toJson(input.skills.map((s, i) => ({ id: `${candidateId}-skill-${i}`, ...s }))),
-      languages: toJson(input.languages.map((l) => ({ code: l.code, level: l.level }))),
-      declaredAvailability: input.declaredAvailability ?? "OPEN_TO_OPPORTUNITIES",
-      desiredContractTypes: toJson((input.desiredContractTypes ?? ["CDI"]) as string[]),
-      summary: input.summary,
-      profileVisibility: input.profileVisibility,
-      updatedAt: now,
-    })
+    .set(values)
     .where(and(eq(candidateProfiles.candidateId, candidateId), eq(candidateProfiles.clerkUserId, clerkUserId)))
     .returning();
 

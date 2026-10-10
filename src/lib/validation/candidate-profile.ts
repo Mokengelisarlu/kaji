@@ -61,6 +61,7 @@ export const certificationSchema = z.object({
 
 export const candidateProfileSchema = z.object({
   fullName: requiredText("Le nom complet", 120),
+  phone: z.string().trim().max(50).optional(),
   headline: requiredText("Le titre professionnel", 160),
   categoryLabel: requiredText("La catégorie", 160),
   domainLabels: z.string().trim().optional(), // comma-separated

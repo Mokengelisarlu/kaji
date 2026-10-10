@@ -26,6 +26,8 @@ export const candidateProfiles = pgTable("candidate_profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
   candidateId: varchar("candidate_id", { length: 20 }).notNull().unique(),
   clerkUserId: varchar("clerk_user_id", { length: 255 }).unique(),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 50 }),
   fullName: varchar("full_name", { length: 255 }).notNull(),
   headline: varchar("headline", { length: 255 }).notNull(),
   categorySlug: varchar("category_slug", { length: 100 }).notNull(),

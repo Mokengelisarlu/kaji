@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import {
   evaluateCandidateProfileSubmission,
   type CandidateProfileState,
@@ -12,8 +12,12 @@ export async function submitCandidateProfile(
   formData: FormData,
 ): Promise<CandidateProfileState> {
   const { userId } = await auth();
-  
-  const result = await evaluateCandidateProfileSubmission(formData, userId ?? undefined);
+  const user = await currentUser();
+  const email =
+    user?.emailAddresses.find((address) => address.id === user.primaryEmailAddressId)?.emailAddress ??
+    user?.emailAddresses[0]?.emailAddress;
+
+  const result = await evaluateCandidateProfileSubmission(formData, userId ?? undefined, email);
   
   if (result.status === "success") {
     // Retour au tableau de bord : il affiche le profil fraîchement créé.
