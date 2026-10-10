@@ -1,15 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireSession } from "@/lib/auth/guard";
 import { CandidateProfileForm } from "./candidate-profile-form";
 import { DraftReminder } from "./draft-reminder";
 
 export default async function CandidatOnboardingPage() {
-  const { userId } = await auth();
-  
-  if (!userId) {
-    redirect("/connexion");
-  }
-  
+  await requireSession();
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">

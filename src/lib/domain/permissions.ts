@@ -185,3 +185,17 @@ export const ADMIN_ROLES: readonly Role[] = [ROLE.ADMIN, ROLE.SUPER_ADMIN];
 export function isAdminRole(role: Role): boolean {
   return ADMIN_ROLES.includes(role);
 }
+
+/**
+ * Équipe Kaji interne (§4.2, §5.3, §5.4).
+ *
+ * Distinct de `ADMIN_ROLES` : le médiateur RH n'administre pas la plateforme,
+ * mais il fait partie de l'équipe et, à ce titre, peut consulter une fiche
+ * `ON_REQUEST` ou `PRIVATE` dans le cadre de la médiation. Un `EMPLOYER`,
+ * même authentifié, n'en fait jamais partie.
+ */
+export const STAFF_ROLES: readonly Role[] = [ROLE.RH, ROLE.ADMIN, ROLE.SUPER_ADMIN];
+
+export function isStaffRole(role: Role | null): boolean {
+  return role !== null && STAFF_ROLES.includes(role);
+}

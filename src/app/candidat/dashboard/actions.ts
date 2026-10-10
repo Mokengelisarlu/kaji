@@ -1,7 +1,8 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { requirePermission } from "@/lib/auth/guard";
+import { ACTION, RESOURCE } from "@/lib/domain/permissions";
 import {
   evaluateAvailabilityUpdate,
   evaluateCertificationsUpdate,
@@ -14,11 +15,13 @@ import {
   type CandidateProfileState,
 } from "@/lib/use-cases/candidate-profile";
 
+/**
+ * Édition d'un bloc du profil : action réservée au titulaire (§20). La matrice
+ * accorde `CANDIDATE_PROFILE: UPDATE` au candidat et au prestataire ; toute
+ * autre identité est refusée par défaut avant même de toucher au profil.
+ */
 async function requireProfile() {
-  const { userId } = await auth();
-  if (!userId) {
-    redirect("/connexion");
-  }
+  const { userId } = await requirePermission(ACTION.UPDATE, RESOURCE.CANDIDATE_PROFILE);
   const profile = await getCandidateProfileForUser(userId);
   if (!profile) {
     redirect("/candidat/onboarding");

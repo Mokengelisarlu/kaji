@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Award, Briefcase, CheckCircle2, Mail, MapPin, Pencil, Phone, Users } from "lucide-react";
@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Container } from "@/components/ui/layout";
+import { requireSession } from "@/lib/auth/guard";
 import { PROFILE_VISIBILITY_LABEL } from "@/lib/domain/enums";
 import { DOMAIN_BY_SLUG } from "@/lib/mock/referentials";
 import { getCandidateProfileForUser } from "@/lib/use-cases/candidate-profile";
@@ -33,11 +34,7 @@ const BLOC_LABELS: Record<string, string> = {
 };
 
 export default async function CandidatDashboardPage({ searchParams }: PageProps<"/candidat/dashboard">) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/connexion");
-  }
+  const { userId } = await requireSession();
 
   const profile = await getCandidateProfileForUser(userId);
   if (!profile) {

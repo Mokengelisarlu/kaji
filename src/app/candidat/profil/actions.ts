@@ -1,7 +1,8 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { requirePermission, requireSession } from "@/lib/auth/guard";
+import { ACTION, RESOURCE } from "@/lib/domain/permissions";
 import {
   deleteCandidateProfileForUser,
   evaluateCandidateProfileUpdate,
@@ -13,10 +14,7 @@ export async function updateCandidateProfile(
   _previous: CandidateProfileState,
   formData: FormData,
 ): Promise<CandidateProfileState> {
-  const { userId } = await auth();
-  if (!userId) {
-    redirect("/connexion");
-  }
+  const { userId } = await requirePermission(ACTION.UPDATE, RESOURCE.CANDIDATE_PROFILE);
 
   const profile = await getCandidateProfileForUser(userId);
   if (!profile) {
@@ -34,10 +32,11 @@ export async function updateCandidateProfile(
 }
 
 export async function deleteCandidateProfile(): Promise<void> {
-  const { userId } = await auth();
-  if (!userId) {
-    redirect("/connexion");
-  }
+  // Le retrait d'une fiche n'est pas un `DELETE` de la matrice (§20) : le
+  // candidat ne dispose que de `R/U` sur son profil. L'identité et
+  // l'appartenance sont vérifiées ici et dans le repository ; la transition
+  // vers un statut archivé relève d'un futur workflow.
+  const { userId } = await requireSession();
 
   await deleteCandidateProfileForUser(userId);
   redirect("/candidat/onboarding?profil=supprime");

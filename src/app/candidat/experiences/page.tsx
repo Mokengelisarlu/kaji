@@ -1,14 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { requireSession } from "@/lib/auth/guard";
 
 export default async function CandidatPage() {
-  const { userId } = await auth();
-  
-  if (!userId) {
-    redirect("/connexion");
-  }
-  
+  await requireSession();
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">

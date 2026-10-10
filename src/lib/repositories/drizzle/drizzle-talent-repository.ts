@@ -17,7 +17,7 @@ import type {
   TalentDomain,
   TalentFilters,
 } from "@/lib/domain/talent";
-import { EFFECTIVE_AVAILABILITY } from "@/lib/domain/enums";
+import { EFFECTIVE_AVAILABILITY, PROFILE_VISIBILITY } from "@/lib/domain/enums";
 import { db } from "@/lib/db";
 import { candidateProfiles } from "@/lib/db/schema";
 import { applyDirectoryFilters } from "../directory-engine";
@@ -37,8 +37,8 @@ type CandidateProfileRow = typeof candidateProfiles.$inferSelect;
  * moteur partagé `directory-engine`, identique au vivier de démonstration.
  *
  * Confidentialité : `findPublished*` et l'annuaire ne renvoient que les fiches
- * `PUBLIC` (§4.2). Les fiches `ON_REQUEST`/`PRIVATE` restent invisibles des
- * canaux publics.
+ * `PUBLIC` (§4.2), conformément à la règle domaine `isPubliclyListable`. Les
+ * fiches `ON_REQUEST`/`PRIVATE` restent invisibles des canaux publics.
  */
 export class DrizzleTalentRepository implements TalentRepository {
   async list(filters: TalentFilters): Promise<PaginatedTalents> {
@@ -101,13 +101,13 @@ export class DrizzleTalentRepository implements TalentRepository {
   private publishedWhere(candidateId: string) {
     return and(
       eq(candidateProfiles.candidateId, candidateId),
-      eq(candidateProfiles.profileVisibility, "PUBLIC"),
+      eq(candidateProfiles.profileVisibility, PROFILE_VISIBILITY.PUBLIC),
     );
   }
 
   private async findPublishedRows() {
     return db.query.candidateProfiles.findMany({
-      where: eq(candidateProfiles.profileVisibility, "PUBLIC"),
+      where: eq(candidateProfiles.profileVisibility, PROFILE_VISIBILITY.PUBLIC),
     });
   }
 

@@ -1,19 +1,16 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { requireSession } from "@/lib/auth/guard";
 import { DOMAIN_BY_SLUG } from "@/lib/mock/referentials";
 import { getCandidateProfileForUser } from "@/lib/use-cases/candidate-profile";
 import { DeleteProfileForm } from "./delete-profile-form";
 import { EditProfileForm } from "./edit-profile-form";
 
 export default async function CandidatProfilPage({ searchParams }: PageProps<"/candidat/profil">) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/connexion");
-  }
+  const { userId } = await requireSession();
 
   const profile = await getCandidateProfileForUser(userId);
   if (!profile) {

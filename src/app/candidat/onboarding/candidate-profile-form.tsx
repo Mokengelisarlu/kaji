@@ -54,19 +54,43 @@ const RDC_PROVINCES = [
   "Haut-Katanga",
 ] as const;
 
+const TOTAL_STEPS = 10;
+
+/** Libellés des étapes, dans l'ordre, affichés dans l'en-tête de progression. */
+const STEP_TITLES = [
+  "Identité",
+  "Naissance & nationalité",
+  "Contact & localisation",
+  "Profil professionnel",
+  "Expériences",
+  "Formations",
+  "Compétences",
+  "Langues & certifications",
+  "Disponibilité & contrat",
+  "Visibilité & finalisation",
+] as const;
+
 const initialState: CandidateProfileState = {
   status: "idle",
   errors: {},
 };
 
+/**
+ * Association champ → étape : utilisée pour ramener le candidat à l'étape qui
+ * contient une erreur de validation renvoyée par le serveur. Les clés sont les
+ * racines des chemins Zod (`experiences.0.title` → `experiences`).
+ */
 const STEP_BY_FIELD: Record<string, number> = {
-  nom: 1, postnom: 1, prenom: 1, civilite: 1, sexe: 1, dateNaissance: 1, lieuNaissance: 1, nationalite: 1,
-  province: 2, city: 2, country: 2, commune: 2, quartier: 2, adresse: 2, telephone: 2,
-  headline: 3, categoryLabel: 3, domainLabels: 3, summary: 3, yearsOfExperience: 3,
-  declaredAvailability: 3, desiredContractTypes: 3, isRemoteEligible: 3,
-  experiences: 4, education: 4,
-  skills: 5, languages: 5, certifications: 5,
-  profileVisibility: 6,
+  civilite: 1, sexe: 1, nom: 1, postnom: 1, prenom: 1,
+  dateNaissance: 2, lieuNaissance: 2, nationalite: 2,
+  province: 3, city: 3, country: 3, commune: 3, quartier: 3, adresse: 3, telephone: 3,
+  headline: 4, categoryLabel: 4, domainLabels: 4, summary: 4, yearsOfExperience: 4,
+  experiences: 5,
+  education: 6,
+  skills: 7,
+  languages: 8, certifications: 8,
+  declaredAvailability: 9, desiredContractTypes: 9, isRemoteEligible: 9,
+  profileVisibility: 10,
 };
 
 const DEFAULT_VALUES: Record<string, string> = {
@@ -104,7 +128,7 @@ const emptyCertification = (): CandidateProfileDraftCertification => ({
 });
 
 /**
- * Formulaire d'inscription candidat (6 étapes).
+ * Formulaire d'inscription candidat (assistant en 10 étapes).
  *
  * Tous les champs sont *contrôlés* par l'état React : c'est ce qui garantit
  * qu'aucune donnée n'est perdue lorsque l'action serveur renvoie une erreur
@@ -117,7 +141,7 @@ const emptyCertification = (): CandidateProfileDraftCertification => ({
  */
 export function CandidateProfileForm() {
   const [initialDraft] = useState(() => loadCandidateProfileDraft());
-  const [step, setStep] = useState(initialDraft?.step ?? 1);
+  const [step, setStep] = useState(() => Math.min(Math.max(initialDraft?.step ?? 1, 1), TOTAL_STEPS));
 
   const [values, setValues] = useState<Record<string, string>>(() => ({
     ...DEFAULT_VALUES,
@@ -266,7 +290,7 @@ export function CandidateProfileForm() {
 
   const nextStep = () => {
     touch();
-    setStep((current) => Math.min(current + 1, 6));
+    setStep((current) => Math.min(current + 1, TOTAL_STEPS));
   };
   const prevStep = () => {
     touch();
@@ -275,14 +299,16 @@ export function CandidateProfileForm() {
 
   return (
     <form action={formAction} noValidate className="space-y-8">
-      <div className="flex items-center justify-between text-sm text-gray-600">
-        {[1,2,3,4,5,6].map(s => (
-          <div key={s} className={`flex-1 text-center ${step === s ? "font-semibold text-blue-600" : ""}`}>
-            Étape {s}/6
-          </div>
-        ))}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <span>Étape {step} sur {TOTAL_STEPS}</span>
+          <span className="font-medium text-gray-800">{STEP_TITLES[step - 1]}</span>
+        </div>
+        <div className="h-2 w-full rounded-full bg-gray-200" role="progressbar" aria-valuemin={1} aria-valuemax={TOTAL_STEPS} aria-valuenow={step} aria-label="Progression de l'inscription">
+          <div className="h-2 rounded-full bg-blue-600 transition-all" style={{ width: `${(step / TOTAL_STEPS) * 100}%` }} />
+        </div>
       </div>
-      
+
       {state.status === "error" && (
         <div className="rounded-md border border-red-300 bg-red-50 p-4 text-red-800">
           {state.message || "Une erreur est survenue."}
@@ -335,6 +361,10 @@ export function CandidateProfileForm() {
               <input {...bind("prenom")} className="w-full rounded-md border px-3 py-2" required />
             </div>
           </div>
+      </section>
+
+      <section className={`rounded-lg border p-6 space-y-4 ${step === 2 ? "" : "hidden"}`}>
+        <h2 className="text-lg font-semibold">2. Naissance & nationalité</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Date de naissance</label>
@@ -351,8 +381,8 @@ export function CandidateProfileForm() {
           </div>
       </section>
 
-      <section className={`rounded-lg border p-6 space-y-4 ${step === 2 ? "" : "hidden"}`}>
-        <h2 className="text-lg font-semibold">2. Contact & Localisation (RDC)</h2>
+      <section className={`rounded-lg border p-6 space-y-4 ${step === 3 ? "" : "hidden"}`}>
+        <h2 className="text-lg font-semibold">3. Contact & Localisation (RDC)</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Province *</label>
@@ -387,8 +417,8 @@ export function CandidateProfileForm() {
           <input type="hidden" {...bind("country")} />
       </section>
 
-      <section className={`rounded-lg border p-6 space-y-4 ${step === 3 ? "" : "hidden"}`}>
-        <h2 className="text-lg font-semibold">3. Profil professionnel</h2>
+      <section className={`rounded-lg border p-6 space-y-4 ${step === 4 ? "" : "hidden"}`}>
+        <h2 className="text-lg font-semibold">4. Profil professionnel</h2>
           <div>
             <label className="block text-sm font-medium mb-1">Titre professionnel *</label>
             <input {...bind("headline")} className="w-full rounded-md border px-3 py-2" required placeholder="Ex. Ingénieur Informaticien" />
@@ -407,54 +437,15 @@ export function CandidateProfileForm() {
             <label className="block text-sm font-medium mb-1">Résumé professionnel *</label>
             <textarea {...bind("summary")} rows={4} className="w-full rounded-md border px-3 py-2" required placeholder="Décrivez brièvement votre profil, vos réalisations et objectifs..." />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Années d&apos;expérience *</label>
-              <input type="number" {...bind("yearsOfExperience")} className="w-full rounded-md border px-3 py-2" required min="0" max="50" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Disponibilité déclarée</label>
-              <select {...bind("declaredAvailability")} className="w-full rounded-md border px-3 py-2">
-                <option value="">Sélectionner...</option>
-                {Object.values(AVAILABILITY_TYPE).map(avail => (
-                  <option key={avail} value={avail}>{AVAILABILITY_TYPE_LABEL[avail]}</option>
-                ))}
-              </select>
-            </div>
-          </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Types de contrat recherchés</label>
-            <div className="flex flex-wrap gap-4">
-              {Object.values(CONTRACT_TYPE).map(type => (
-                <label key={type} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    name="desiredContractTypes"
-                    value={type}
-                    checked={desiredContractTypes.includes(type)}
-                    onChange={(e) => toggleChecked("desiredContractTypes", type, e.target.checked)}
-                  />
-                  {CONTRACT_TYPE_LABEL[type]}
-                </label>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="isRemoteEligible"
-              id="remote"
-              checked={isRemoteEligible}
-              onChange={(e) => toggleChecked("isRemoteEligible", "on", e.target.checked)}
-            />
-            <label htmlFor="remote" className="text-sm">Eligible au télétravail / remote</label>
+            <label className="block text-sm font-medium mb-1">Années d&apos;expérience *</label>
+            <input type="number" {...bind("yearsOfExperience")} className="w-full rounded-md border px-3 py-2" required min="0" max="50" />
           </div>
       </section>
 
-      <section className={`rounded-lg border p-6 space-y-4 ${step === 4 ? "" : "hidden"}`}>
-        <h2 className="text-lg font-semibold">4. Expériences & Formation</h2>
+      <section className={`rounded-lg border p-6 space-y-4 ${step === 5 ? "" : "hidden"}`}>
+        <h2 className="text-lg font-semibold">5. Expériences professionnelles</h2>
           <div>
-            <h3 className="font-medium mb-3">Expériences professionnelles</h3>
             {experiences.map((experience, i) => (
               <div key={i} className="space-y-2 border rounded-md p-4 mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -463,8 +454,8 @@ export function CandidateProfileForm() {
                 </div>
                 <input name={`experiences[${i}].location`} value={experience.location} onChange={(e) => updateExperience(i, { location: e.target.value })} placeholder="Lieu (Ville, RDC)" className="w-full rounded-md border px-3 py-2" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <input type="month" name={`experiences[${i}].startDate`} value={experience.startDate} onChange={(e) => updateExperience(i, { startDate: e.target.value })} className="rounded-md border px-3 py-2" />
-                  <input type="month" name={`experiences[${i}].endDate`} value={experience.endDate} onChange={(e) => updateExperience(i, { endDate: e.target.value })} className="rounded-md border px-3 py-2" />
+                  <input type="month" name={`experiences[${i}].startDate`} value={experience.startDate} onChange={(e) => updateExperience(i, { startDate: e.target.value })} aria-label="Début (mois et année)" className="rounded-md border px-3 py-2" />
+                  <input type="month" name={`experiences[${i}].endDate`} value={experience.endDate} onChange={(e) => updateExperience(i, { endDate: e.target.value })} aria-label="Fin (mois et année)" className="rounded-md border px-3 py-2" />
                   <div className="flex items-center gap-2">
                     <input type="checkbox" name={`experiences[${i}].isCurrent`} id={`exp-current-${i}`} checked={experience.isCurrent} onChange={(e) => updateExperience(i, { isCurrent: e.target.checked })} />
                     <label htmlFor={`exp-current-${i}`} className="text-sm">Poste actuel</label>
@@ -479,9 +470,11 @@ export function CandidateProfileForm() {
             ))}
             <button type="button" onClick={addExperience} className="text-sm text-blue-600 underline">Ajouter une expérience</button>
           </div>
+      </section>
 
-          <div className="mt-6">
-            <h3 className="font-medium mb-3">Formations</h3>
+      <section className={`rounded-lg border p-6 space-y-4 ${step === 6 ? "" : "hidden"}`}>
+        <h2 className="text-lg font-semibold">6. Formations</h2>
+          <div>
             {education.map((item, i) => (
               <div key={i} className="space-y-2 border rounded-md p-4 mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -502,10 +495,9 @@ export function CandidateProfileForm() {
           </div>
       </section>
 
-      <section className={`rounded-lg border p-6 space-y-4 ${step === 5 ? "" : "hidden"}`}>
-        <h2 className="text-lg font-semibold">5. Compétences, Langues & Certifications</h2>
+      <section className={`rounded-lg border p-6 space-y-4 ${step === 7 ? "" : "hidden"}`}>
+        <h2 className="text-lg font-semibold">7. Compétences</h2>
           <div>
-            <h3 className="font-medium mb-3">Compétences *</h3>
             {skills.map((skill, i) => (
               <div key={i} className="grid grid-cols-1 md:grid-cols-4 gap-2 border rounded-md p-4 mb-4">
                 <input name={`skills[${i}].label`} value={skill.label} onChange={(e) => updateSkill(i, { label: e.target.value })} placeholder="Compétence (ex. Excel, Java, Gestion)" className="rounded-md border px-3 py-2" />
@@ -520,8 +512,11 @@ export function CandidateProfileForm() {
             ))}
             <button type="button" onClick={addSkill} className="text-sm text-blue-600 underline">Ajouter une compétence</button>
           </div>
+      </section>
 
-          <div className="mt-6">
+      <section className={`rounded-lg border p-6 space-y-4 ${step === 8 ? "" : "hidden"}`}>
+        <h2 className="text-lg font-semibold">8. Langues & certifications</h2>
+          <div>
             <h3 className="font-medium mb-3">Langues *</h3>
             {languages.map((language, i) => (
               <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-2 border rounded-md p-4 mb-4">
@@ -560,8 +555,48 @@ export function CandidateProfileForm() {
           </div>
       </section>
 
-      <section className={`rounded-lg border p-6 space-y-4 ${step === 6 ? "" : "hidden"}`}>
-        <h2 className="text-lg font-semibold">6. Visibilité & Finalisation</h2>
+      <section className={`rounded-lg border p-6 space-y-4 ${step === 9 ? "" : "hidden"}`}>
+        <h2 className="text-lg font-semibold">9. Disponibilité & contrat</h2>
+          <div>
+            <label className="block text-sm font-medium mb-1">Disponibilité déclarée</label>
+            <select {...bind("declaredAvailability")} className="w-full rounded-md border px-3 py-2">
+              <option value="">Sélectionner...</option>
+              {Object.values(AVAILABILITY_TYPE).map(avail => (
+                <option key={avail} value={avail}>{AVAILABILITY_TYPE_LABEL[avail]}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Types de contrat recherchés</label>
+            <div className="flex flex-wrap gap-4">
+              {Object.values(CONTRACT_TYPE).map(type => (
+                <label key={type} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="desiredContractTypes"
+                    value={type}
+                    checked={desiredContractTypes.includes(type)}
+                    onChange={(e) => toggleChecked("desiredContractTypes", type, e.target.checked)}
+                  />
+                  {CONTRACT_TYPE_LABEL[type]}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="isRemoteEligible"
+              id="remote"
+              checked={isRemoteEligible}
+              onChange={(e) => toggleChecked("isRemoteEligible", "on", e.target.checked)}
+            />
+            <label htmlFor="remote" className="text-sm">Eligible au télétravail / remote</label>
+          </div>
+      </section>
+
+      <section className={`rounded-lg border p-6 space-y-4 ${step === 10 ? "" : "hidden"}`}>
+        <h2 className="text-lg font-semibold">10. Visibilité & finalisation</h2>
           <div>
             <label className="block text-sm font-medium mb-1">Visibilité du profil *</label>
             <select {...bind("profileVisibility")} className="w-full rounded-md border px-3 py-2" required>
@@ -586,12 +621,12 @@ export function CandidateProfileForm() {
             ← Précédent
           </button>
         )}
-        {step < 6 && (
+        {step < TOTAL_STEPS && (
           <button type="button" onClick={nextStep} className="ml-auto rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
             Suivant →
           </button>
         )}
-        {step === 6 && (
+        {step === TOTAL_STEPS && (
           <button type="submit" disabled={pending} className="ml-auto rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50">
             {pending ? "Création du profil..." : "Terminer l'inscription"}
           </button>

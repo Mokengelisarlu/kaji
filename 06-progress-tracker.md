@@ -21,20 +21,20 @@
 | Langage | TypeScript 5, `strict`, `noUncheckedIndexedAccess` |
 | Style | Tailwind CSS v4 (`@theme` dans `globals.css`) |
 | Paquet | pnpm 11.13.1 |
-| Fichiers source | 114 fichiers `.ts` / `.tsx` |
-| Volume source | ~9 000 lignes |
+| Fichiers source | 120 fichiers `.ts` / `.tsx` |
+| Volume source | ~12 900 lignes (hors tests) |
 | Routes | 25 fichiers `page.tsx` (dont pages candidat authentifiées) |
-| Commits git | 11 — historique initialisé |
-| Tests | **185** tests Vitest dans 13 fichiers `.test.ts` |
+| Commits git | 12 — historique initialisé |
+| Tests | **198** tests Vitest dans 15 fichiers `.test.ts` |
 | Base de données | Drizzle ORM + `@neondatabase/serverless` (`candidate_profiles`) |
-| Authentification | Clerk (`@clerk/nextjs`) — session serveur |
+| Authentification | Clerk (`@clerk/nextjs`) — session serveur, RBAC branché sur les actions candidat |
 
 ### Validation
 
 ```bash
 pnpm lint        # eslint                       → 0 erreur
 pnpm typecheck   # next typegen && tsc --noEmit → 0 erreur
-pnpm test        # vitest run                   → 185 tests, 13 fichiers
+pnpm test        # vitest run                   → 198 tests, 15 fichiers
 pnpm build       # next build (Turbopack)       → succès
 ```
 
@@ -66,9 +66,10 @@ Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non c
   `notFound()` levé dans `generateMetadata` **et** dans le corps → vrai 404.
   Route dynamique.
 
-- [x] **M4 — Couche domaine** (`src/lib/domain/`, 9 modules)
+- [x] **M4 — Couche domaine** (`src/lib/domain/`, 10 modules)
   `enums.ts`, `status-transitions.ts`, `availability.ts`, `freshness.ts`,
-  `matching.ts`, `permissions.ts`, `talent.ts`, `person-name.ts`, `period.ts`.
+  `matching.ts`, `permissions.ts`, `talent.ts`, `person-name.ts`, `period.ts`,
+  `visibility.ts`.
   Aucun import externe, aucun React, aucune base. Testable sans DOM.
 
 - [x] **M5 — Design system** (`src/components/ui/`, 11 fichiers)
@@ -107,13 +108,13 @@ Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non c
 
 ### Phase 3 — Hors MVP, spécifié non implémenté
 
-- [ ] Espaces authentifiés (candidat, entreprise, RH, admin)
+- [~] Espaces authentifiés — *espace candidat livré, entreprise/RH/admin non commencés*
 - [ ] Workflow de recrutement (§17) et registre des demandes
 - [ ] Opportunités publiées
 - [ ] Documents et pièces justificatives
 - [ ] Notifications (e-mail, in-app)
-- [ ] Persistance (Neon + Drizzle)
-- [ ] Authentification (Clerk)
+- [x] Persistance (Neon + Drizzle) — schéma, migrations `0001`–`0003` appliquées, `DrizzleTalentRepository` actif
+- [x] Authentification (Clerk) — session serveur + rôles issus des *claims*, RBAC branché
 
 ---
 
@@ -134,21 +135,21 @@ réelle dans le code.
 | R8 | Aucune coordonnée dans une route publique | `PublicTalent` par construction | `[x]` |
 | R9 | Aucune note de valeur d'un candidat n'est publiée | `matching.ts` | `[x]` |
 | R10 | Le score n'est jamais un pourcentage de qualité | `matching.ts`, textes §14 | `[x]` |
-| R11 | Le refus par défaut est la règle en autorisation | `permissions.ts` (`[]` = refus) | `[~]` matrice écrite, **non branchée** |
-| R12 | Le rôle vient exclusivement de la session serveur | — | `[ ]` aucune session n'existe |
+| R11 | Le refus par défaut est la règle en autorisation | `permissions.ts` (`[]` = refus), consommée par `auth/guard.ts` (`requirePermission`) et branchée dans les actions candidat | `[x]` |
+| R12 | Le rôle vient exclusivement de la session serveur | `auth/session.ts` + `auth/role.ts` (`sessionClaims.metadata.role`, repli `CANDIDATE`) | `[x]` |
 | R13 | Toute URL de filtre est validée par liste blanche | `talent-filters.ts` | `[x]` |
 | R14 | Changer un filtre ramène à la page 1 | `buildDirectoryHref()` | `[x]` |
 | R15 | Kaji.com = marque, Mokengeli SARLU = opérateur | `BRAND`, footer | `[x]` |
 | R16 | Les données de démonstration sont marquées | `src/lib/mock/` | `[x]` |
-| R17 | Un profil retiré reste consultable par l'équipe qui l'a retiré | §9.4 | `[ ]` pas d'espace authentifié |
+| R17 | Un profil retiré reste consultable par l'équipe qui l'a retiré | §9.4 | `[ ]` pas de statut `ARCHIVED` ni de workflow de retrait |
 | R18 | Le refus de RH est définitif sans arbitrage humain | `verify.ts` à créer | `[ ]` `use-cases/verify.ts` n'existe pas |
 | R19 | Identité structurée Nom/Postnom/Prénom, postnom facultatif, affichage « Nom Postnom Prénom » | `person-name.ts`, `schema.ts` (`last_name`/`post_name`/`first_name`), formulaires onboarding & édition | `[x]` |
 | R20 | Dates de parcours au mois et à l'année, jamais de jour, fin ≥ début | `period.ts`, `candidate-profile.ts` (validation), formulaires | `[x]` |
+| R21 | Inscription candidat guidée en 10 étapes, brouillon local restauré, retour automatique à l'étape en erreur | `src/app/candidat/onboarding/candidate-profile-form.tsx`, `candidate-profile-draft.ts` | `[x]` |
 
-**13 exigences livrées, 1 partiellement, 6 non commencées.** Le « 1 partiellement »
-(R11) et les 5 « non commencées » qui dépendent de l'authentification ne sont pas
-des bugs : ce sont des étapes non faites, et elles sont nommées ici plutôt que
-laissées en attente.
+**19 exigences livrées, 0 partiellement, 2 non commencées.** Les 2 « non commencées »
+(R17, R18) ne sont pas des bugs : ce sont des étapes non faites, et elles sont
+nommées ici plutôt que laissées en attente.
 
 ---
 
@@ -158,21 +159,23 @@ Repris de `03-system-architecture.md` §39.5, avec le statut réel.
 
 | Risque | Gravité | Statut | Condition de levée |
 |---|---|---|---|
-| Aucune authentification | **Bloquant production** | Non traité | Clerk opérationnel + session serveur |
-| Aucune persistance | **Bloquant production** | Non traité | Neon + Drizzle branchés sur `repositories/index.ts` |
-| Aucun test | Élevé | Non traité | Runner installé + 4 modules critiques couverts |
+| Aucune authentification | **Bloquant production** | Partiellement traité | Session serveur + RBAC branchés sur les actions candidat ; attribution des rôles (métadonnée Clerk) et espaces entreprise/RH/admin restants |
+| Aucune persistance | **Bloquant production** | Traité | Neon + Drizzle actifs (`DrizzleTalentRepository`), migrations `0001`–`0003` appliquées |
+| Aucun test | Élevé | Traité | 198 tests Vitest, intégrés à `pnpm check` |
 | Aucun rate limiting | Élevé | Non traité | Limiteur sur les routes d'écriture et les formulaires |
 | Aucun en-tête CSP | Moyen | Non traité | CSP + `nosniff` + `DENY` en production |
 | Aucune table d'audit | Moyen | Non traité | `audit_event` créée et alimentée |
 | Pages légales en placeholder | **Bloquant production** | Partiellement traité | Pages rédigées et indexables, mais 24 mentions obligatoires restent à renseigner par l'opérateur |
-| Formulaire de contact absent | **Bloquant fonctionnel** | Non traité | M8 livré |
+| Formulaire de contact absent | **Bloquant fonctionnel** | Partiellement traité | M8 (formulaire + validation) livré ; canal de livraison à configurer |
 | `framer-motion` inutilisé | Faible | À nettoyer | Dépendance supprimée ou besoin identifié |
 | Assets `create-next-app` non utilisés | Faible | À nettoyer | `public/*.svg` supprimés |
 | `README.md` par défaut | Faible | À nettoyer | README réel |
-| Repository sans commit | Moyen | À traiter | Premier commit |
+| Repository sans commit | Moyen | Traité | 12 commits |
 
-**4 blocages durs** : authentification, persistance, pages légales, formulaire de
-contact. Aucun n'est un défaut de code — ce sont des étapes non faites.
+**2 blocages durs** : pages légales (mentions à renseigner) et livraison du
+formulaire de contact. L'authentification est partiellement traitée et n'est plus
+un blocage de code. Aucun de ces points n'est un défaut de code — ce sont des
+étapes non faites.
 
 ---
 
@@ -183,7 +186,7 @@ Découverts pendant la rédaction des documents, vérifiés dans le code.
 | # | Écart | Où | Correction proposée |
 |---|---|---|---|
 | 1 | L'annuaire ne distingue pas « vivier vide » et « aucun résultat pour ces filtres » ; le message promet « le vivier grandit chaque semaine » dans les deux cas | `app/talents/page.tsx:95` | **Fait** : deux `EmptyState` distincts, avec titre, description et icône différents (`Users` pour un vivier vide, `SearchX` pour un filtrage sans résultat). L'action « Réinitialiser les filtres » n'apparaît que dans le second cas, où elle a un sens. Vérifié en HTTP : `?category=inexistant` affiche « Aucun profil ne correspond », jamais « Le vivier est en cours de constitution ». Cette seconde branche reste inatteignable tant que le vivier de démonstration contient 14 profils — elle le sera au démarrage d'un déploiement réel |
-| 2 | `R11` — la matrice RBAC (14 ressources × 5 actions × 6 rôles) n'est consommée par aucun chemin d'exécution | `lib/domain/permissions.ts` | Statut visible dans l'interface, ou branchement |
+| 2 | `R11` — la matrice RBAC (14 ressources × 5 actions × 6 rôles) n'est consommée par aucun chemin d'exécution | `lib/domain/permissions.ts` | **Fait** : `auth/guard.ts` expose `requirePermission(action, resource)`, qui consomme `authorize()` et refuse par défaut. Branché dans les actions candidat (mise à jour/suppression de profil, édition de blocs) ; le rôle provient de `auth/session.ts` |
 | 3 | M4 est annoncé « testé manuellement » dans `02-product-vision.md`, mais aucun test n'existe | `02-product-vision.md` §21.1 | **Fait** : 108 tests Vitest (`src/**/*.test.ts`), intégrés à `pnpm check` ; `02` §21.1 reformulé en conséquence |
 | 4 | Le champ `verificationStatus` existe dans `MockTalentRecord` (10 `VERIFIED`, 3 `PARTIAL`, 1 `IN_REVIEW`, 1 `UNVERIFIED`) mais n'est **pas** projeté dans `PublicTalent` : l'écart entre « vérifié par Kaji » et « déclaré par le candidat » n'est jamais affiché | `lib/mock/talents.ts`, `lib/domain/talent.ts` | Décider : projeter un statut de vérification, ou documenter que seul le statut de présence est public |
 | 5 | `daysSinceProfileUpdate` est stocké en **nombre de jours** puis converti en `Date` par `daysAgo()` au moment de la projection (`talents.ts:867`) : le calcul de fraîcheur dépend donc du module entier, et non du repository | `lib/mock/talents.ts:40-47` | **Fait** : `MockTalentRecord` porte désormais `lastProfileUpdateAt: Date` et `lastAvailabilityConfirmationAt: Date`. Les 15 records sont inchangés, `toPublicTalent()` ne connaît plus l'ancre temporelle. `05` §44.3 mis à jour |
@@ -298,9 +301,8 @@ un état valide.
 8. ~~Rendre la fraîcheur calculable hors du module mock (écart 5).~~ **Fait.**
 9. Décider du sort de `verificationStatus` (écart 4) et documenter.
    **Décision produit requise** — les deux options ont un coût différent.
-10. Rendre visible ou assumer l'état de la matrice RBAC (écart 2).
-    **Décision produit requise** — 410 combinations testées, aucune consommée
-    par un chemin d'exécution.
+10. ~~Rendre visible ou assumer l'état de la matrice RBAC (écart 2).~~ **Fait** —
+    `requirePermission` consomme la matrice dans les actions candidat.
 
 ### Étape 4 — Contenu et parcours
 
@@ -312,9 +314,12 @@ un état valide.
 
 ### Étape 5 — Infrastructure
 
-14. Clerk : intégration, session, `proxy.ts`, branchement de la matrice RBAC.
-15. Neon + Drizzle : schéma, migrations, `DrizzleTalentRepository`, bascule dans
-    `repositories/index.ts`.
+14. ~~Clerk : intégration, session, `proxy.ts`, branchement de la matrice RBAC.~~
+    **Fait (partiel)** — session serveur (`auth/session.ts`), rôles (`auth/role.ts`),
+    gardes (`auth/guard.ts`) et branchement RBAC des actions candidat. Restent :
+    attribution des rôles via la métadonnée Clerk et espaces entreprise/RH/admin.
+15. ~~Neon + Drizzle : schéma, migrations, `DrizzleTalentRepository`, bascule dans
+    `repositories/index.ts`.~~ **Fait.**
 16. `audit_event` + rate limiting + en-têtes CSP.
 17. Notifications e-mail.
 

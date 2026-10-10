@@ -13,6 +13,7 @@ import {
   type VerificationStatus,
 } from "@/lib/domain/enums";
 import { resolveEffectiveAvailability } from "@/lib/domain/availability";
+import { isPubliclyListable } from "@/lib/domain/visibility";
 import type {
   Certification,
   Education,
@@ -908,11 +909,9 @@ function locationFor(citySlug: string): Location {
   );
 }
 
-/** Un profil n'est publiable que s'il est visible et non archivé. */
+/** Un profil n'est publiable que s'il est listable et non archivé (§4.2). */
 export function isPublishable(record: MockTalentRecord): boolean {
-  return (
-    record.visibility === PROFILE_VISIBILITY.PUBLIC && record.status !== CANDIDATE_STATUS.ARCHIVED
-  );
+  return isPubliclyListable(record.visibility) && record.status !== CANDIDATE_STATUS.ARCHIVED;
 }
 
 export const MOCK_RECORDS: readonly MockTalentRecord[] = RECORDS;
