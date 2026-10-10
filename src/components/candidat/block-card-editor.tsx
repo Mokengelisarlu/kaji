@@ -61,11 +61,11 @@ export type BlockEditorInitial =
     }
   | {
       readonly variant: "education";
-      readonly education: readonly { diploma: string; school: string; field?: string; startYear?: number; endYear?: number }[];
+      readonly education: readonly { diploma: string; school: string; field?: string; startDate?: string; endDate?: string }[];
     }
   | {
       readonly variant: "certifications";
-      readonly certifications: readonly { name: string; issuer: string; issuedYear?: number; expiresAt?: string }[];
+      readonly certifications: readonly { name: string; issuer: string; issuedAt?: string; expiresAt?: string }[];
     };
 
 const BLOCK_ACTIONS = {
@@ -343,8 +343,8 @@ function ExperiencesFields({
           </div>
           <Input name={`experiences[${i}].location`} defaultValue={row.location} placeholder="Lieu (Ville, RDC)" />
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <Input type="date" name={`experiences[${i}].startDate`} defaultValue={row.startDate} />
-            <Input type="date" name={`experiences[${i}].endDate`} defaultValue={row.endDate} />
+            <Input type="month" name={`experiences[${i}].startDate`} defaultValue={row.startDate} />
+            <Input type="month" name={`experiences[${i}].endDate`} defaultValue={row.endDate} />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name={`experiences[${i}].isCurrent`} defaultChecked={row.isCurrent} />
               Poste actuel
@@ -378,12 +378,12 @@ function EducationFields({
       diploma: e.diploma,
       school: e.school,
       field: e.field ?? "",
-      startYear: e.startYear !== undefined ? String(e.startYear) : "",
-      endYear: e.endYear !== undefined ? String(e.endYear) : "",
+      startDate: e.startDate ?? "",
+      endDate: e.endDate ?? "",
     }));
-    return mapped.length > 0 ? mapped : [{ diploma: "", school: "", field: "", startYear: "", endYear: "" }];
+    return mapped.length > 0 ? mapped : [{ diploma: "", school: "", field: "", startDate: "", endDate: "" }];
   });
-  const add = () => setRows([...rows, { diploma: "", school: "", field: "", startYear: "", endYear: "" }]);
+  const add = () => setRows([...rows, { diploma: "", school: "", field: "", startDate: "", endDate: "" }]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -395,8 +395,8 @@ function EducationFields({
           </div>
           <Input name={`education[${i}].field`} defaultValue={row.field} placeholder="Filière / Spécialisation" />
           <div className="grid grid-cols-2 gap-2">
-            <Input type="number" name={`education[${i}].startYear`} defaultValue={row.startYear} placeholder="Année début" min={1900} max={2100} />
-            <Input type="number" name={`education[${i}].endYear`} defaultValue={row.endYear} placeholder="Année d'obtention" min={1900} max={2100} />
+            <Input type="month" name={`education[${i}].startDate`} defaultValue={row.startDate} aria-label="Début (mois et année)" />
+            <Input type="month" name={`education[${i}].endDate`} defaultValue={row.endDate} aria-label="Fin (mois et année)" />
           </div>
           {i > 0 && (
             <div className="flex justify-end">
@@ -423,12 +423,12 @@ function CertificationsFields({
     const mapped = initial.map((c) => ({
       name: c.name,
       issuer: c.issuer,
-      issuedYear: c.issuedYear !== undefined ? String(c.issuedYear) : "",
+      issuedAt: c.issuedAt ?? "",
       expiresAt: c.expiresAt ?? "",
     }));
-    return mapped.length > 0 ? mapped : [{ name: "", issuer: "", issuedYear: "", expiresAt: "" }];
+    return mapped.length > 0 ? mapped : [{ name: "", issuer: "", issuedAt: "", expiresAt: "" }];
   });
-  const add = () => setRows([...rows, { name: "", issuer: "", issuedYear: "", expiresAt: "" }]);
+  const add = () => setRows([...rows, { name: "", issuer: "", issuedAt: "", expiresAt: "" }]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -439,8 +439,8 @@ function CertificationsFields({
             <Input name={`certifications[${i}].issuer`} defaultValue={row.issuer} placeholder="Organisme délivreur" />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Input type="number" name={`certifications[${i}].issuedYear`} defaultValue={row.issuedYear} placeholder="Année d'obtention" min={1900} max={2100} />
-            <Input type="date" name={`certifications[${i}].expiresAt`} defaultValue={row.expiresAt} />
+            <Input type="month" name={`certifications[${i}].issuedAt`} defaultValue={row.issuedAt} aria-label="Obtention (mois et année)" />
+            <Input type="month" name={`certifications[${i}].expiresAt`} defaultValue={row.expiresAt} aria-label="Expiration (mois et année, si applicable)" />
           </div>
           {i > 0 && (
             <div className="flex justify-end">

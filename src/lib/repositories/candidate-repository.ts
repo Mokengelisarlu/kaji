@@ -21,6 +21,9 @@ function toStoredProfile(row: CandidateProfileRow): StoredCandidateProfile {
   return {
     candidateId: row.candidateId,
     fullName: row.fullName,
+    lastName: row.lastName ?? undefined,
+    postName: row.postName ?? undefined,
+    firstName: row.firstName ?? undefined,
     headline: row.headline,
     categorySlug: row.categorySlug,
     categoryLabel: row.categoryLabel,
@@ -67,6 +70,9 @@ export async function createCandidateProfileInDb(input: CreateCandidateProfileIn
       email: input.email,
       phone: input.phone,
       fullName: input.fullName,
+      lastName: input.lastName,
+      postName: input.postName,
+      firstName: input.firstName,
       headline: input.headline,
       categorySlug,
       categoryLabel: input.categoryLabel,
@@ -164,6 +170,15 @@ export async function updateCandidateProfile(
   }
   if (input.phone !== undefined) {
     values.phone = input.phone;
+  }
+  if (input.lastName !== undefined) {
+    values.lastName = input.lastName;
+  }
+  if (input.postName !== undefined) {
+    values.postName = input.postName;
+  }
+  if (input.firstName !== undefined) {
+    values.firstName = input.firstName;
   }
   if (input.experiences !== undefined) {
     values.experiences = toJson(input.experiences.map((e, i) => ({ id: `${candidateId}-exp-${i}`, ...e })));

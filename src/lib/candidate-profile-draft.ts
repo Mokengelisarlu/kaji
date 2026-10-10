@@ -19,14 +19,14 @@ export type CandidateProfileDraftEducation = {
   diploma: string;
   school: string;
   field: string;
-  startYear: string;
-  endYear: string;
+  startDate: string;
+  endDate: string;
 };
 
 export type CandidateProfileDraftCertification = {
   name: string;
   issuer: string;
-  issuedYear: string;
+  issuedAt: string;
   expiresAt: string;
 };
 
@@ -137,8 +137,8 @@ function toStringArrays(value: unknown): CandidateProfileDraftArrays {
         diploma: str(row.diploma),
         school: str(row.school),
         field: str(row.field),
-        startYear: str(row.startYear),
-        endYear: str(row.endYear),
+        startDate: str(row.startDate),
+        endDate: str(row.endDate),
       };
     }),
     certifications: asList(input.certifications).map((entry) => {
@@ -146,7 +146,7 @@ function toStringArrays(value: unknown): CandidateProfileDraftArrays {
       return {
         name: str(row.name),
         issuer: str(row.issuer),
-        issuedYear: str(row.issuedYear),
+        issuedAt: str(row.issuedAt),
         expiresAt: str(row.expiresAt),
       };
     }),

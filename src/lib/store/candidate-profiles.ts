@@ -17,6 +17,11 @@ import {
 
 export type StoredCandidateProfile = PublicTalentProfile & {
   readonly clerkUserId?: string;
+  /** Nom de famille (ordre d'affichage : Nom Postnom Prénom). */
+  readonly lastName?: string;
+  /** Postnom, facultatif selon les usages. */
+  readonly postName?: string;
+  readonly firstName?: string;
   /** Contact privé, jamais exposé sur la fiche publique (§9). */
   readonly email?: string;
   /** Contact privé, jamais exposé sur la fiche publique (§9). */
@@ -72,6 +77,9 @@ export type CreateCandidateProfileInput = {
   readonly email?: string;
   readonly phone?: string;
   readonly fullName: string;
+  readonly lastName?: string;
+  readonly postName?: string;
+  readonly firstName?: string;
   readonly headline: string;
   readonly categoryLabel: string;
   readonly domainLabels?: readonly string[];
@@ -99,6 +107,9 @@ export function createCandidateProfile(input: CreateCandidateProfileInput): Stor
   const profile: StoredCandidateProfile = {
     candidateId,
     fullName: input.fullName,
+    lastName: input.lastName,
+    postName: input.postName,
+    firstName: input.firstName,
     headline: input.headline,
     categorySlug,
     categoryLabel: input.categoryLabel,

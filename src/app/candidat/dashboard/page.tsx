@@ -175,8 +175,8 @@ export default async function CandidatDashboardPage({ searchParams }: PageProps<
                 diploma: e.diploma,
                 school: e.school,
                 field: e.field,
-                startYear: e.startYear,
-                endYear: e.endYear,
+                startDate: e.startDate,
+                endDate: e.endDate,
               })),
             }}
           >
@@ -190,7 +190,7 @@ export default async function CandidatDashboardPage({ searchParams }: PageProps<
               certifications: profile.certifications.map((c) => ({
                 name: c.name,
                 issuer: c.issuer,
-                issuedYear: c.issuedYear,
+                issuedAt: c.issuedAt,
                 expiresAt: c.expiresAt,
               })),
             }}

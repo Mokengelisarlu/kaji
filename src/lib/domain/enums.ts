@@ -177,6 +177,94 @@ export const CONTRACT_TYPE_LABEL = {
 } as const satisfies Record<ContractType, string>;
 
 /* ------------------------------------------------------------------ */
+/* Parcours, niveau professionnel et modalités de travail             */
+/* ------------------------------------------------------------------ */
+
+/** Nature d'une expérience de parcours. */
+export const ACTIVITY_TYPE = {
+  EMPLOYMENT: "EMPLOYMENT",
+  INTERNSHIP: "INTERNSHIP",
+  FREELANCE: "FREELANCE",
+  APPRENTICESHIP: "APPRENTICESHIP",
+  VOLUNTEERING: "VOLUNTEERING",
+  OTHER: "OTHER",
+} as const;
+
+export type ActivityType = (typeof ACTIVITY_TYPE)[keyof typeof ACTIVITY_TYPE];
+
+export const ACTIVITY_TYPE_LABEL = {
+  EMPLOYMENT: "Emploi",
+  INTERNSHIP: "Stage",
+  FREELANCE: "Freelance",
+  APPRENTICESHIP: "Apprentissage",
+  VOLUNTEERING: "Bénévolat",
+  OTHER: "Autre",
+} as const satisfies Record<ActivityType, string>;
+
+/** Statut d'une formation. */
+export const EDUCATION_STATUS = {
+  COMPLETED: "COMPLETED",
+  IN_PROGRESS: "IN_PROGRESS",
+  INTERRUPTED: "INTERRUPTED",
+  OTHER: "OTHER",
+} as const;
+
+export type EducationStatus = (typeof EDUCATION_STATUS)[keyof typeof EDUCATION_STATUS];
+
+export const EDUCATION_STATUS_LABEL = {
+  COMPLETED: "Terminé",
+  IN_PROGRESS: "En cours",
+  INTERRUPTED: "Interrompu",
+  OTHER: "Autre",
+} as const satisfies Record<EducationStatus, string>;
+
+/**
+ * Niveau professionnel **déclaré** par le candidat.
+ * Jamais déduit automatiquement du seul nombre d'années d'expérience.
+ */
+export const SENIORITY_LEVEL = {
+  BEGINNER: "BEGINNER",
+  JUNIOR: "JUNIOR",
+  INTERMEDIATE: "INTERMEDIATE",
+  SENIOR: "SENIOR",
+  EXPERT: "EXPERT",
+} as const;
+
+export type SeniorityLevel = (typeof SENIORITY_LEVEL)[keyof typeof SENIORITY_LEVEL];
+
+export const SENIORITY_LEVEL_LABEL = {
+  BEGINNER: "Débutant",
+  JUNIOR: "Junior",
+  INTERMEDIATE: "Intermédiaire",
+  SENIOR: "Senior",
+  EXPERT: "Expert",
+} as const satisfies Record<SeniorityLevel, string>;
+
+/** Explication affichée à côté de chaque niveau (§4). */
+export const SENIORITY_LEVEL_HINT = {
+  BEGINNER: "Je découvre le métier ou possède peu de pratique.",
+  JUNIOR: "J'ai acquis des premières compétences pratiques.",
+  INTERMEDIATE: "Je peux travailler de manière relativement autonome.",
+  SENIOR: "Je possède une expérience approfondie et une forte autonomie.",
+  EXPERT: "Je possède une expertise avancée et peux conseiller ou encadrer d'autres professionnels.",
+} as const satisfies Record<SeniorityLevel, string>;
+
+/** Modalités de travail recherchées. */
+export const WORK_MODE = {
+  ONSITE: "ONSITE",
+  HYBRID: "HYBRID",
+  REMOTE: "REMOTE",
+} as const;
+
+export type WorkMode = (typeof WORK_MODE)[keyof typeof WORK_MODE];
+
+export const WORK_MODE_LABEL = {
+  ONSITE: "Sur site",
+  HYBRID: "Hybride",
+  REMOTE: "À distance",
+} as const satisfies Record<WorkMode, string>;
+
+/* ------------------------------------------------------------------ */
 /* Statuts de demande de recrutement (§6)                             */
 /* ------------------------------------------------------------------ */
 

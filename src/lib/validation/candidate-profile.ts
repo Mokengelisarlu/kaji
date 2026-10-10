@@ -6,6 +6,7 @@ import {
   LANGUAGE_LEVEL,
   PROFILE_VISIBILITY,
 } from "@/lib/domain/enums";
+import { comparePeriods, isYearMonthOrYear } from "@/lib/domain/period";
 
 /**
  * Validation for candidate profile creation (onboarding).
@@ -19,6 +20,23 @@ const requiredText = (field: string, max: number) =>
     .min(1, `${field} est obligatoire.`)
     .max(max, `${field} ne doit pas dépasser ${max} caractères.`);
 
+const PERIOD_MESSAGE = "Format attendu : AAAA-MM (mois et année).";
+
+/** Période facultative (`AAAA-MM` ou `AAAA` seule) ; une chaîne vide devient absente. */
+const optionalPeriod = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => (v === undefined || v === "" ? undefined : v))
+  .refine((v) => v === undefined || isYearMonthOrYear(v), { message: PERIOD_MESSAGE });
+
+/** Période obligatoire (`AAAA-MM` ou `AAAA` seule). */
+const requiredPeriod = z
+  .string()
+  .trim()
+  .min(1, "La date de début est obligatoire.")
+  .refine((v) => isYearMonthOrYear(v), { message: PERIOD_MESSAGE });
+
 export const skillSchema = z.object({
   label: requiredText("La compétence", 80),
   level: z.coerce.number().int().min(1).max(5),
@@ -30,37 +48,55 @@ export const languageSchema = z.object({
   level: z.enum(Object.values(LANGUAGE_LEVEL)),
 });
 
-export const experienceSchema = z.object({
-  title: requiredText("Le titre du poste", 160),
-  organization: requiredText("L'organisation", 160),
-  location: z.string().trim().max(160).optional(),
-  startDate: z.string().trim().min(1, "La date de début est obligatoire."),
-  isCurrent: z.boolean().optional().default(false),
-  endDate: z.string().trim().optional(),
-  summary: z.string().trim().max(2000).optional(),
-  achievements: z
-    .array(z.string().trim().max(4000))
-    .optional()
-    .default([]),
-});
+export const experienceSchema = z
+  .object({
+    title: requiredText("Le titre du poste", 160),
+    organization: requiredText("L'organisation", 160),
+    location: z.string().trim().max(160).optional(),
+    startDate: requiredPeriod,
+    isCurrent: z.boolean().optional().default(false),
+    endDate: optionalPeriod,
+    summary: z.string().trim().max(2000).optional(),
+    achievements: z
+      .array(z.string().trim().max(4000))
+      .optional()
+      .default([]),
+  })
+  .refine(
+    (e) => e.isCurrent || e.endDate === undefined || comparePeriods(e.startDate, e.endDate) <= 0,
+    { message: "La date de fin doit être postérieure ou égale à la date de début.", path: ["endDate"] },
+  );
 
-export const educationSchema = z.object({
-  diploma: requiredText("Le diplôme", 160),
-  school: requiredText("L'établissement", 160),
-  field: z.string().trim().max(160).optional(),
-  startYear: z.coerce.number().int().min(1900).max(2100).optional().or(z.literal("")).transform((v) => (v === "" ? undefined : v)),
-  endYear: z.coerce.number().int().min(1900).max(2100).optional().or(z.literal("")).transform((v) => (v === "" ? undefined : v)),
-});
+export const educationSchema = z
+  .object({
+    diploma: requiredText("Le diplôme", 160),
+    school: requiredText("L'établissement", 160),
+    field: z.string().trim().max(160).optional(),
+    startDate: optionalPeriod,
+    endDate: optionalPeriod,
+  })
+  .refine((e) => e.startDate === undefined || e.endDate === undefined || comparePeriods(e.startDate, e.endDate) <= 0, {
+    message: "La date de fin doit être postérieure ou égale à la date de début.",
+    path: ["endDate"],
+  });
 
 export const certificationSchema = z.object({
   name: requiredText("La certification", 160),
   issuer: requiredText("L'organisme", 160),
-  issuedYear: z.coerce.number().int().min(1900).max(2100).optional().or(z.literal("")).transform((v) => (v === "" ? undefined : v)),
-  expiresAt: z.string().trim().optional(),
+  issuedAt: optionalPeriod,
+  expiresAt: optionalPeriod,
 });
 
 export const candidateProfileSchema = z.object({
   fullName: requiredText("Le nom complet", 120),
+  lastName: requiredText("Le nom", 120),
+  postName: z
+    .string()
+    .trim()
+    .max(120, "Le postnom ne doit pas dépasser 120 caractères.")
+    .optional()
+    .transform((v) => (v === "" ? undefined : v)),
+  firstName: requiredText("Le prénom", 120),
   phone: z.string().trim().max(50).optional(),
   headline: requiredText("Le titre professionnel", 160),
   categoryLabel: requiredText("La catégorie", 160),

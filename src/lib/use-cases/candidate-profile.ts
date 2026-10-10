@@ -19,6 +19,7 @@ import {
 import type { CandidateProfileSectionPatch, StoredCandidateProfile } from "@/lib/store/candidate-profiles";
 import { CONTRACT_TYPE } from "@/lib/domain/enums";
 import type { LanguageCode, LanguageLevel } from "@/lib/domain/enums";
+import { composeFullName, normalizeNamePart } from "@/lib/domain/person-name";
 
 export type CandidateProfileState = {
   readonly status: "idle" | "success" | "error" | "invalid";
@@ -99,14 +100,14 @@ type EducationRaw = {
   diploma: string;
   school: string;
   field?: string;
-  startYear?: string;
-  endYear?: string;
+  startDate?: string;
+  endDate?: string;
 };
 
 type CertificationRaw = {
   name: string;
   issuer: string;
-  issuedYear?: string;
+  issuedAt?: string;
   expiresAt?: string;
 };
 
@@ -148,8 +149,8 @@ function parseEducation(formData: FormData): EducationRaw[] {
       diploma,
       school: formData.get(`education[${idx}].school`) as string,
       field: (formData.get(`education[${idx}].field`) as string) || undefined,
-      startYear: formData.get(`education[${idx}].startYear`) as string,
-      endYear: formData.get(`education[${idx}].endYear`) as string,
+      startDate: (formData.get(`education[${idx}].startDate`) as string) || undefined,
+      endDate: (formData.get(`education[${idx}].endDate`) as string) || undefined,
     });
     idx++;
   }
@@ -168,7 +169,7 @@ function parseCertifications(formData: FormData): CertificationRaw[] {
     certifications.push({
       name,
       issuer: formData.get(`certifications[${idx}].issuer`) as string,
-      issuedYear: formData.get(`certifications[${idx}].issuedYear`) as string,
+      issuedAt: (formData.get(`certifications[${idx}].issuedAt`) as string) || undefined,
       expiresAt: (formData.get(`certifications[${idx}].expiresAt`) as string) || undefined,
     });
     idx++;
@@ -187,12 +188,18 @@ function extractCandidateProfileInput(formData: FormData): CandidateProfileSubmi
 
   const desiredContractTypes = formData.getAll("desiredContractTypes") as string[];
 
-  const nom = (raw.nom as string) || "";
-  const prenom = (raw.prenom as string) || "";
-  const computedFullName = (raw.fullName as string) || `${prenom} ${nom}`.trim() || nom || prenom;
+  const lastName = normalizeNamePart((raw.nom as string) || (raw.lastName as string));
+  const firstName = normalizeNamePart((raw.prenom as string) || (raw.firstName as string));
+  const postName = normalizeNamePart((raw.postnom as string) || (raw.postName as string)) || undefined;
+  const providedFullName = normalizeNamePart(raw.fullName as string);
+  const composedFullName = composeFullName({ lastName, postName, firstName });
+  const fullName = composedFullName || providedFullName;
 
   return {
-    fullName: computedFullName || (raw.fullName as string),
+    fullName,
+    lastName,
+    postName,
+    firstName,
     phone: (raw.telephone as string) || undefined,
     headline: raw.headline as string,
     categoryLabel: raw.categoryLabel as string,
@@ -237,11 +244,14 @@ export async function evaluateCandidateProfileSubmission(
       ...parsed.data,
       clerkUserId,
       email,
-      phone: parsed.data.phone,
       domainLabels: parseCommaSeparated(parsed.data.domainLabels as string | undefined),
-      skills: parsed.data.skills.map((s: any) => ({ label: s.label, level: s.level, yearsOfPractice: s.yearsOfPractice === "" ? undefined : (typeof s.yearsOfPractice === 'number' ? s.yearsOfPractice : (s.yearsOfPractice ? Number(s.yearsOfPractice) : undefined)) })) as any,
-      languages: parsed.data.languages as any,
-      experiences: parsed.data.experiences?.map((e: any) => ({ ...e, achievements: Array.isArray(e.achievements) ? e.achievements : parseAchievements(e.achievements as any) })) as any,
+      skills: parsed.data.skills.map((s) => ({
+        label: s.label,
+        level: s.level as 1 | 2 | 3 | 4 | 5,
+        yearsOfPractice: s.yearsOfPractice,
+      })),
+      languages: parsed.data.languages,
+      experiences: parsed.data.experiences.map((e) => ({ ...e, achievements: e.achievements ?? [] })),
     });
     return {
       status: "success",
@@ -278,6 +288,9 @@ export async function evaluateCandidateProfileUpdate(
   try {
     const profile = await updateCandidateProfile(candidateId, clerkUserId, {
       fullName: parsed.data.fullName,
+      lastName: parsed.data.lastName,
+      postName: parsed.data.postName,
+      firstName: parsed.data.firstName,
       phone: parsed.data.phone,
       headline: parsed.data.headline,
       categoryLabel: parsed.data.categoryLabel,
@@ -453,8 +466,8 @@ export async function evaluateEducationUpdate(
       diploma: e.diploma,
       school: e.school,
       field: e.field,
-      startYear: e.startYear,
-      endYear: e.endYear,
+      startDate: e.startDate,
+      endDate: e.endDate,
     })),
   });
 }
@@ -470,7 +483,7 @@ export async function evaluateCertificationsUpdate(
     certifications: parsed.data.certifications.map((c) => ({
       name: c.name,
       issuer: c.issuer,
-      issuedYear: c.issuedYear,
+      issuedAt: c.issuedAt,
       expiresAt: c.expiresAt,
     })),
   });

@@ -85,7 +85,7 @@ export function CandidateProfileForm() {
             <input name="country" className="w-full rounded-md border px-3 py-2" defaultValue="France" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Années d'expérience *</label>
+            <label className="block text-sm font-medium mb-1">Années d&apos;expérience *</label>
             <input type="number" name="yearsOfExperience" className="w-full rounded-md border px-3 py-2" required min="0" max="50" />
             {state.errors.yearsOfExperience && <p className="text-sm text-red-600 mt-1">{state.errors.yearsOfExperience[0]}</p>}
           </div>
@@ -202,7 +202,7 @@ export function CandidateProfileForm() {
             ))}
           </select>
           <div className="text-xs text-gray-600 mt-2 space-y-1">
-            <p><strong>Public</strong> : visible dans l'annuaire et accessible à tous</p>
+            <p><strong>Public</strong> : visible dans l&apos;annuaire et accessible à tous</p>
             <p><strong>Visible sur demande</strong> : non listé publiquement, accessible via lien direct ou sur demande explicite</p>
             <p><strong>Privé</strong> : masqué de tout canal externe</p>
           </div>

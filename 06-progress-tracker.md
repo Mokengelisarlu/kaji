@@ -21,24 +21,25 @@
 | Langage | TypeScript 5, `strict`, `noUncheckedIndexedAccess` |
 | Style | Tailwind CSS v4 (`@theme` dans `globals.css`) |
 | Paquet | pnpm 11.13.1 |
-| Fichiers source | 56 fichiers `.ts` / `.tsx` |
-| Volume source | ~6 200 lignes |
-| Routes | 13 (12 fichiers de page + `/_not-found` ; 11 statiques, 2 dynamiques) |
-| Commits git | **0** — le dépôt n'a pas d'historique |
-| Tests | **0** — aucun runner installé |
-| Base de données | Aucune — `MockTalentRepository` en mémoire |
-| Authentification | Aucune |
+| Fichiers source | 114 fichiers `.ts` / `.tsx` |
+| Volume source | ~9 000 lignes |
+| Routes | 25 fichiers `page.tsx` (dont pages candidat authentifiées) |
+| Commits git | 11 — historique initialisé |
+| Tests | **185** tests Vitest dans 13 fichiers `.test.ts` |
+| Base de données | Drizzle ORM + `@neondatabase/serverless` (`candidate_profiles`) |
+| Authentification | Clerk (`@clerk/nextjs`) — session serveur |
 
 ### Validation
 
 ```bash
 pnpm lint        # eslint                       → 0 erreur
 pnpm typecheck   # next typegen && tsc --noEmit → 0 erreur
+pnpm test        # vitest run                   → 185 tests, 13 fichiers
 pnpm build       # next build (Turbopack)       → succès
 ```
 
-`pnpm check` enchaîne les trois. Une Pull Request n'est pas mergeable si l'un des
-trois échoue.
+`pnpm check` enchaîne lint, test, typecheck et build. Une Pull Request n'est pas
+mergeable si l'un des quatre échoue.
 
 ---
 
@@ -65,11 +66,10 @@ Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non c
   `notFound()` levé dans `generateMetadata` **et** dans le corps → vrai 404.
   Route dynamique.
 
-- [x] **M4 — Couche domaine** (`src/lib/domain/`, 7 modules)
+- [x] **M4 — Couche domaine** (`src/lib/domain/`, 9 modules)
   `enums.ts`, `status-transitions.ts`, `availability.ts`, `freshness.ts`,
-  `matching.ts`, `permissions.ts`, `talent.ts`. Aucun import externe, aucun React,
-  aucune base. Testable sans DOM.
-  **Couvert par 108 tests Vitest** dans `src/**/*.test.ts` (étape 2).
+  `matching.ts`, `permissions.ts`, `talent.ts`, `person-name.ts`, `period.ts`.
+  Aucun import externe, aucun React, aucune base. Testable sans DOM.
 
 - [x] **M5 — Design system** (`src/components/ui/`, 11 fichiers)
   Tokens `@theme` (3 échelles de marque + 4 sémantiques, 15 tailles de police,
@@ -142,8 +142,10 @@ réelle dans le code.
 | R16 | Les données de démonstration sont marquées | `src/lib/mock/` | `[x]` |
 | R17 | Un profil retiré reste consultable par l'équipe qui l'a retiré | §9.4 | `[ ]` pas d'espace authentifié |
 | R18 | Le refus de RH est définitif sans arbitrage humain | `verify.ts` à créer | `[ ]` `use-cases/verify.ts` n'existe pas |
+| R19 | Identité structurée Nom/Postnom/Prénom, postnom facultatif, affichage « Nom Postnom Prénom » | `person-name.ts`, `schema.ts` (`last_name`/`post_name`/`first_name`), formulaires onboarding & édition | `[x]` |
+| R20 | Dates de parcours au mois et à l'année, jamais de jour, fin ≥ début | `period.ts`, `candidate-profile.ts` (validation), formulaires | `[x]` |
 
-**11 exigences livrées, 1 partiellement, 6 non commencées.** Le « 1 partiellement »
+**13 exigences livrées, 1 partiellement, 6 non commencées.** Le « 1 partiellement »
 (R11) et les 5 « non commencées » qui dépendent de l'authentification ne sont pas
 des bugs : ce sont des étapes non faites, et elles sont nommées ici plutôt que
 laissées en attente.

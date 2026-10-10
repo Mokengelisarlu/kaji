@@ -1,4 +1,5 @@
 import { pgTable, uuid, varchar, text, integer, boolean, timestamp, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import type { Certification, Education, Experience } from "@/lib/domain/talent";
 
 export const profileVisibilityEnum = pgEnum("profile_visibility", ["PUBLIC", "ON_REQUEST", "PRIVATE"]);
 export const poolKindEnum = pgEnum("pool_kind", ["TALENT_POOL", "PRESTATAIRE_POOL"]);
@@ -10,13 +11,13 @@ export const availabilityTypeEnum = pgEnum("availability_type", [
   "IMMEDIATELY", "ONE_MONTH", "THREE_MONTHS", "OPEN_TO_OPPORTUNITIES", "NOT_AVAILABLE"
 ]);
 export const contractTypeEnum = pgEnum("contract_type", [
-  "CDI", "CDD", "STAGE", "ALTERNANCE", "INTERIM", "FREELANCE", "CONSULTING"
+  "CDI", "CDD", "STAGE", "ALTERNANCE", "FREELANCE", "PRESTATION", "CONSULTING"
 ]);
 export const verificationStatusEnum = pgEnum("verification_status", [
   "UNVERIFIED", "IN_REVIEW", "PARTIAL", "VERIFIED", "REJECTED"
 ]);
 export const languageCodeEnum = pgEnum("language_code", [
-  "fr", "en", "pt", "es", "ar", "sw", "ln", "kg", "ts", "rn", "wo"
+  "FR", "EN", "PT", "ES", "AR", "SW", "LN", "KG", "TS", "RN", "WO"
 ]);
 export const languageLevelEnum = pgEnum("language_level", [
   "NATIVE", "PROFESSIONAL", "INTERMEDIATE", "BASIC"
@@ -29,6 +30,9 @@ export const candidateProfiles = pgTable("candidate_profiles", {
   email: varchar("email", { length: 255 }),
   phone: varchar("phone", { length: 50 }),
   fullName: varchar("full_name", { length: 255 }).notNull(),
+  lastName: varchar("last_name", { length: 120 }),
+  postName: varchar("post_name", { length: 120 }),
+  firstName: varchar("first_name", { length: 120 }),
   headline: varchar("headline", { length: 255 }).notNull(),
   categorySlug: varchar("category_slug", { length: 100 }).notNull(),
   categoryLabel: varchar("category_label", { length: 150 }).notNull(),
@@ -47,9 +51,9 @@ export const candidateProfiles = pgTable("candidate_profiles", {
   poolKind: poolKindEnum("pool_kind").notNull().default("TALENT_POOL"),
   isVerified: boolean("is_verified").notNull().default(false),
   source: talentSourceEnum("source").notNull().default("DIRECT_SIGNUP"),
-  experiences: jsonb("experiences").$type<Array<any>>().notNull().default([]),
-  education: jsonb("education").$type<Array<any>>().notNull().default([]),
-  certifications: jsonb("certifications").$type<Array<any>>().notNull().default([]),
+  experiences: jsonb("experiences").$type<Array<Experience>>().notNull().default([]),
+  education: jsonb("education").$type<Array<Education>>().notNull().default([]),
+  certifications: jsonb("certifications").$type<Array<Certification>>().notNull().default([]),
   profileVisibility: profileVisibilityEnum("profile_visibility").notNull().default("PUBLIC"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

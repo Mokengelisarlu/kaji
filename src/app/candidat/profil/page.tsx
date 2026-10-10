@@ -57,6 +57,9 @@ export default async function CandidatProfilPage({ searchParams }: PageProps<"/c
       <EditProfileForm
         initial={{
           fullName: profile.fullName,
+          lastName: profile.lastName ?? "",
+          postName: profile.postName ?? "",
+          firstName: profile.firstName ?? "",
           email,
           phone: profile.phone ?? "",
           headline: profile.headline,
@@ -92,13 +95,13 @@ export default async function CandidatProfilPage({ searchParams }: PageProps<"/c
             diploma: edu.diploma,
             school: edu.school,
             field: edu.field ?? "",
-            startYear: edu.startYear !== undefined ? String(edu.startYear) : "",
-            endYear: edu.endYear !== undefined ? String(edu.endYear) : "",
+            startDate: edu.startDate ?? "",
+            endDate: edu.endDate ?? "",
           })),
           certifications: profile.certifications.map((cert) => ({
             name: cert.name,
             issuer: cert.issuer,
-            issuedYear: cert.issuedYear !== undefined ? String(cert.issuedYear) : "",
+            issuedAt: cert.issuedAt ?? "",
             expiresAt: cert.expiresAt ?? "",
           })),
         }}

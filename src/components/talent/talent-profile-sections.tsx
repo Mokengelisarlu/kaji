@@ -14,6 +14,7 @@ import type {
   PublicTalent,
 } from "@/lib/domain/talent";
 import { CONTRACT_TYPE_LABEL, POOL_KIND, POOL_KIND_LABEL } from "@/lib/domain/enums";
+import { formatPeriodFr } from "@/lib/domain/period";
 
 /**
  * Blocs de la fiche publique talent (§14).
@@ -214,8 +215,8 @@ export function ExperienceSection({ experiences }: { experiences: readonly Exper
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <h3 className="text-sm font-semibold">{experience.title}</h3>
                 <p className="text-subtle-foreground text-xs">
-                  {formatYear(experience.startDate)} –{" "}
-                  {experience.isCurrent ? "aujourd'hui" : formatYear(experience.endDate)}
+                  {formatPeriodFr(experience.startDate)} –{" "}
+                  {experience.isCurrent ? "aujourd'hui" : formatPeriodFr(experience.endDate)}
                 </p>
               </div>
               <p className="text-muted-foreground text-sm">
@@ -257,10 +258,10 @@ export function EducationSection({ education }: { education: readonly Education[
                 {item.school}
                 {item.field !== undefined && ` · ${item.field}`}
               </p>
-              {item.startYear !== undefined && (
+              {item.startDate !== undefined && (
                 <p className="text-subtle-foreground text-xs">
-                  {item.startYear}
-                  {item.endYear !== undefined && ` – ${item.endYear}`}
+                  {formatPeriodFr(item.startDate)}
+                  {item.endDate !== undefined && ` – ${formatPeriodFr(item.endDate)}`}
                 </p>
               )}
             </li>
@@ -287,7 +288,8 @@ export function CertificationsSection({
               <h3 className="text-sm font-semibold">{certification.name}</h3>
               <p className="text-muted-foreground text-sm">
                 {certification.issuer}
-                {certification.issuedYear !== undefined && ` · ${certification.issuedYear}`}
+                {certification.issuedAt !== undefined && ` · ${formatPeriodFr(certification.issuedAt)}`}
+                {certification.expiresAt !== undefined && ` — expire ${formatPeriodFr(certification.expiresAt)}`}
               </p>
             </li>
           ))}
@@ -299,8 +301,4 @@ export function CertificationsSection({
 
 function EmptyLine({ children }: { children: React.ReactNode }) {
   return <p className="text-muted-foreground text-sm">{children}</p>;
-}
-
-function formatYear(date: string | undefined): string {
-  return date === undefined ? "" : date.slice(0, 4);
 }

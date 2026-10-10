@@ -29,11 +29,14 @@ type ExperienceRow = {
   summary: string;
   achievements: string;
 };
-type EducationRow = { diploma: string; school: string; field: string; startYear: string; endYear: string };
-type CertificationRow = { name: string; issuer: string; issuedYear: string; expiresAt: string };
+type EducationRow = { diploma: string; school: string; field: string; startDate: string; endDate: string };
+type CertificationRow = { name: string; issuer: string; issuedAt: string; expiresAt: string };
 
 export type EditProfileInitialValues = {
   readonly fullName: string;
+  readonly lastName: string;
+  readonly postName: string;
+  readonly firstName: string;
   readonly email: string;
   readonly phone: string;
   readonly headline: string;
@@ -94,11 +97,11 @@ export function EditProfileForm({ initial }: { readonly initial: EditProfileInit
   const addExperience = () => setExperiences([...experiences, emptyExperience()]);
   const removeExperience = (i: number) => setExperiences(experiences.filter((_, idx) => idx !== i));
 
-  const emptyEducation = (): EducationRow => ({ diploma: "", school: "", field: "", startYear: "", endYear: "" });
+  const emptyEducation = (): EducationRow => ({ diploma: "", school: "", field: "", startDate: "", endDate: "" });
   const addEducation = () => setEducation([...education, emptyEducation()]);
   const removeEducation = (i: number) => setEducation(education.filter((_, idx) => idx !== i));
 
-  const emptyCertification = (): CertificationRow => ({ name: "", issuer: "", issuedYear: "", expiresAt: "" });
+  const emptyCertification = (): CertificationRow => ({ name: "", issuer: "", issuedAt: "", expiresAt: "" });
   const addCertification = () => setCertifications([...certifications, emptyCertification()]);
   const removeCertification = (i: number) => setCertifications(certifications.filter((_, idx) => idx !== i));
 
@@ -123,11 +126,21 @@ export function EditProfileForm({ initial }: { readonly initial: EditProfileInit
 
       <section className="rounded-lg border p-6 space-y-4">
         <h2 className="text-lg font-semibold">Identité & profil professionnel</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="fullName">Nom complet *</Label>
-            <Input id="fullName" name="fullName" defaultValue={initial.fullName} required />
+            <Label htmlFor="nom">Nom *</Label>
+            <Input id="nom" name="nom" defaultValue={initial.lastName} required />
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="postnom">Postnom</Label>
+            <Input id="postnom" name="postnom" defaultValue={initial.postName} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="prenom">Prénom *</Label>
+            <Input id="prenom" name="prenom" defaultValue={initial.firstName} required />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="headline">Titre professionnel *</Label>
             <Input id="headline" name="headline" defaultValue={initial.headline} required placeholder="Ex. Ingénieur Informaticien" />
@@ -281,8 +294,8 @@ export function EditProfileForm({ initial }: { readonly initial: EditProfileInit
                 </div>
                 <Input name={`experiences[${i}].location`} defaultValue={exp.location} placeholder="Lieu (Ville, Pays)" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <Input type="date" name={`experiences[${i}].startDate`} defaultValue={exp.startDate} />
-                  <Input type="date" name={`experiences[${i}].endDate`} defaultValue={exp.endDate} />
+                  <Input type="month" name={`experiences[${i}].startDate`} defaultValue={exp.startDate} />
+                  <Input type="month" name={`experiences[${i}].endDate`} defaultValue={exp.endDate} />
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" name={`experiences[${i}].isCurrent`} defaultChecked={exp.isCurrent} className="size-4" />
                     Poste actuel
@@ -312,8 +325,8 @@ export function EditProfileForm({ initial }: { readonly initial: EditProfileInit
                 </div>
                 <Input name={`education[${i}].field`} defaultValue={edu.field} placeholder="Filière / Spécialisation" />
                 <div className="grid grid-cols-2 gap-2">
-                  <Input type="number" name={`education[${i}].startYear`} defaultValue={edu.startYear} placeholder="Année début" min={1900} max={2100} />
-                  <Input type="number" name={`education[${i}].endYear`} defaultValue={edu.endYear} placeholder="Année d'obtention" min={1900} max={2100} />
+                  <Input type="month" name={`education[${i}].startDate`} defaultValue={edu.startDate} aria-label="Début (mois et année)" />
+                  <Input type="month" name={`education[${i}].endDate`} defaultValue={edu.endDate} aria-label="Fin (mois et année)" />
                 </div>
                 {i > 0 && (
                   <div className="flex justify-end">
@@ -336,8 +349,8 @@ export function EditProfileForm({ initial }: { readonly initial: EditProfileInit
                   <Input name={`certifications[${i}].issuer`} defaultValue={cert.issuer} placeholder="Organisme délivreur" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <Input type="number" name={`certifications[${i}].issuedYear`} defaultValue={cert.issuedYear} placeholder="Année d'obtention" min={1900} max={2100} />
-                  <Input type="date" name={`certifications[${i}].expiresAt`} defaultValue={cert.expiresAt} />
+                  <Input type="month" name={`certifications[${i}].issuedAt`} defaultValue={cert.issuedAt} aria-label="Obtention (mois et année)" />
+                  <Input type="month" name={`certifications[${i}].expiresAt`} defaultValue={cert.expiresAt} aria-label="Expiration (mois et année, si applicable)" />
                 </div>
                 {i > 0 && (
                   <div className="flex justify-end">

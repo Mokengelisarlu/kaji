@@ -41,15 +41,15 @@ describe("candidate profile draft", () => {
             title: "Développeur",
             organization: "Kaji",
             location: "Lubumbashi",
-            startDate: "2020-01-01",
+            startDate: "2020-01",
             isCurrent: true,
             endDate: "",
             summary: "Missions",
             achievements: "ligne 1\nligne 2",
           },
         ],
-        education: [{ diploma: "Licence", school: "UNILU", field: "Info", startYear: "2015", endYear: "2019" }],
-        certifications: [{ name: "ACCA", issuer: "ACCA", issuedYear: "2021", expiresAt: "" }],
+        education: [{ diploma: "Licence", school: "UNILU", field: "Info", startDate: "2015-09", endDate: "2019-06" }],
+        certifications: [{ name: "ACCA", issuer: "ACCA", issuedAt: "2021-03", expiresAt: "" }],
       },
     };
 

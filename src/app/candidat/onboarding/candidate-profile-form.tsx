@@ -60,7 +60,7 @@ const initialState: CandidateProfileState = {
 };
 
 const STEP_BY_FIELD: Record<string, number> = {
-  fullName: 1, nom: 1, prenom: 1, civilite: 1, sexe: 1, dateNaissance: 1, lieuNaissance: 1, nationalite: 1,
+  nom: 1, postnom: 1, prenom: 1, civilite: 1, sexe: 1, dateNaissance: 1, lieuNaissance: 1, nationalite: 1,
   province: 2, city: 2, country: 2, commune: 2, quartier: 2, adresse: 2, telephone: 2,
   headline: 3, categoryLabel: 3, domainLabels: 3, summary: 3, yearsOfExperience: 3,
   declaredAvailability: 3, desiredContractTypes: 3, isRemoteEligible: 3,
@@ -75,7 +75,6 @@ const DEFAULT_VALUES: Record<string, string> = {
   nationalite: "Congolaise",
   country: "République Démocratique du Congo",
   profileVisibility: PROFILE_VISIBILITY.PUBLIC,
-  fullName: "",
 };
 
 const emptySkill = (): CandidateProfileDraftSkill => ({ label: "", level: "3", yearsOfPractice: "" });
@@ -94,13 +93,13 @@ const emptyEducation = (): CandidateProfileDraftEducation => ({
   diploma: "",
   school: "",
   field: "",
-  startYear: "",
-  endYear: "",
+  startDate: "",
+  endDate: "",
 });
 const emptyCertification = (): CandidateProfileDraftCertification => ({
   name: "",
   issuer: "",
-  issuedYear: "",
+  issuedAt: "",
   expiresAt: "",
 });
 
@@ -322,17 +321,20 @@ export function CandidateProfileForm() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Nom *</label>
               <input {...bind("nom")} className="w-full rounded-md border px-3 py-2" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Postnom</label>
+              <input {...bind("postnom")} className="w-full rounded-md border px-3 py-2" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Prénom *</label>
               <input {...bind("prenom")} className="w-full rounded-md border px-3 py-2" required />
             </div>
           </div>
-          <input type="hidden" {...bind("fullName")} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Date de naissance</label>
@@ -461,8 +463,8 @@ export function CandidateProfileForm() {
                 </div>
                 <input name={`experiences[${i}].location`} value={experience.location} onChange={(e) => updateExperience(i, { location: e.target.value })} placeholder="Lieu (Ville, RDC)" className="w-full rounded-md border px-3 py-2" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <input type="date" name={`experiences[${i}].startDate`} value={experience.startDate} onChange={(e) => updateExperience(i, { startDate: e.target.value })} className="rounded-md border px-3 py-2" />
-                  <input type="date" name={`experiences[${i}].endDate`} value={experience.endDate} onChange={(e) => updateExperience(i, { endDate: e.target.value })} className="rounded-md border px-3 py-2" />
+                  <input type="month" name={`experiences[${i}].startDate`} value={experience.startDate} onChange={(e) => updateExperience(i, { startDate: e.target.value })} className="rounded-md border px-3 py-2" />
+                  <input type="month" name={`experiences[${i}].endDate`} value={experience.endDate} onChange={(e) => updateExperience(i, { endDate: e.target.value })} className="rounded-md border px-3 py-2" />
                   <div className="flex items-center gap-2">
                     <input type="checkbox" name={`experiences[${i}].isCurrent`} id={`exp-current-${i}`} checked={experience.isCurrent} onChange={(e) => updateExperience(i, { isCurrent: e.target.checked })} />
                     <label htmlFor={`exp-current-${i}`} className="text-sm">Poste actuel</label>
@@ -488,8 +490,8 @@ export function CandidateProfileForm() {
                 </div>
                 <input name={`education[${i}].field`} value={item.field} onChange={(e) => updateEducation(i, { field: e.target.value })} placeholder="Filière / Spécialisation" className="w-full rounded-md border px-3 py-2" />
                 <div className="grid grid-cols-2 gap-2">
-                  <input type="number" name={`education[${i}].startYear`} value={item.startYear} onChange={(e) => updateEducation(i, { startYear: e.target.value })} placeholder="Année début" className="rounded-md border px-3 py-2" />
-                  <input type="number" name={`education[${i}].endYear`} value={item.endYear} onChange={(e) => updateEducation(i, { endYear: e.target.value })} placeholder="Année d'obtention" className="rounded-md border px-3 py-2" />
+                  <input type="month" name={`education[${i}].startDate`} value={item.startDate} onChange={(e) => updateEducation(i, { startDate: e.target.value })} aria-label="Début (mois et année)" className="rounded-md border px-3 py-2" />
+                  <input type="month" name={`education[${i}].endDate`} value={item.endDate} onChange={(e) => updateEducation(i, { endDate: e.target.value })} aria-label="Fin (mois et année)" className="rounded-md border px-3 py-2" />
                 </div>
                 {i > 0 && (
                   <button type="button" onClick={() => removeEducation(i)} className="text-sm text-red-600">Supprimer cette formation</button>
@@ -547,8 +549,8 @@ export function CandidateProfileForm() {
               <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-2 border rounded-md p-4 mb-4">
                 <input name={`certifications[${i}].name`} value={certification.name} onChange={(e) => updateCertification(i, { name: e.target.value })} placeholder="Nom de la certification" className="rounded-md border px-3 py-2" />
                 <input name={`certifications[${i}].issuer`} value={certification.issuer} onChange={(e) => updateCertification(i, { issuer: e.target.value })} placeholder="Organisme délivreur" className="rounded-md border px-3 py-2" />
-                <input type="number" name={`certifications[${i}].issuedYear`} value={certification.issuedYear} onChange={(e) => updateCertification(i, { issuedYear: e.target.value })} placeholder="Année d'obtention" className="rounded-md border px-3 py-2" />
-                <input type="date" name={`certifications[${i}].expiresAt`} value={certification.expiresAt} onChange={(e) => updateCertification(i, { expiresAt: e.target.value })} placeholder="Date d'expiration (si applicable)" className="rounded-md border px-3 py-2" />
+                <input type="month" name={`certifications[${i}].issuedAt`} value={certification.issuedAt} onChange={(e) => updateCertification(i, { issuedAt: e.target.value })} aria-label="Obtention (mois et année)" className="rounded-md border px-3 py-2" />
+                <input type="month" name={`certifications[${i}].expiresAt`} value={certification.expiresAt} onChange={(e) => updateCertification(i, { expiresAt: e.target.value })} aria-label="Expiration (mois et année, si applicable)" className="rounded-md border px-3 py-2" />
                 {i > 0 && (
                   <button type="button" onClick={() => removeCertification(i)} className="text-sm text-red-600">Supprimer</button>
                 )}

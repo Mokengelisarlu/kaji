@@ -307,6 +307,37 @@ Le RBAC (§20) rend `CANDIDATE_PRIVATE_DATA` et `CANDIDATE_DOCUMENTS` **inaccess
 au rôle `EMPLOYER` — l'entrée est un tableau vide `[]`, refus par défaut. Ce n'est
 pas masqué dans l'interface, c'est absent de la matrice d'autorisation.
 
+### §4.4 Identité nominative et datation
+
+L'identité d'une personne est **structurée**, jamais présumée à partir d'une
+chaîne unique. Trois composantes explicites :
+
+| Champ | Règle |
+|---|---|
+| `lastName` (Nom) | Obligatoire |
+| `postName` (Postnom) | **Facultatif** — jamais inventé lorsqu'absent |
+| `firstName` (Prénom) | Obligatoire |
+
+Ordre d'affichage officiel : **« Nom Postnom Prénom »**. Le nom affichable est
+composé par `composeFullName` (`src/lib/domain/person-name.ts`) ; les parties
+vides sont omises, jamais remplacées par des espaces. La colonne historique
+`full_name` est conservée pour les fiches migrées et n'est **jamais réécrite
+d'office** : `resolveDisplayName` retombe sur `fullName` tant que les parties ne
+sont pas renseignées. Accents, apostrophes, traits d'union et casse saisis sont
+préservés.
+
+Les dates de parcours (expériences, formations, certifications) sont exprimées
+au **mois et à l'année** — `YYYY-MM` (`src/lib/domain/period.ts`). Le **jour
+n'existe jamais** : aucune date `YYYY-MM-DD` n'est produite ni affichée. La forme
+`YYYY` seule reste tolérée **en lecture** pour les données historiques dont le
+mois n'a jamais été connu ; on n'invente alors aucun mois. Règles associées :
+
+- Une période de fin doit être **postérieure ou égale** au début.
+- Un segment « en cours » (`isCurrent`) n'a pas de fin ; une fin fournie pour un
+  segment en cours est ignorée.
+- L'ancienneté dérivée (`totalYearsCovered`) fusionne les segments qui se
+  chevauchent ou se touchent : un mois n'est **jamais compté deux fois**.
+
 ---
 
 ## §5 — Utilisateurs et personas
@@ -920,6 +951,8 @@ Règles qui traversent tout le produit, à ne jamais enfreindre.
 | R16 | Les données de démonstration sont fictives et marquées | `src/lib/mock/` (§44) |
 | R17 | Un profil retiré reste consultable par l'équipe qui l'a retiré | §9.4 |
 | R18 | Le refus de RH est définitif sans arbitrage humain | `verify.ts` à créer — `updateTag` + journal |
+| R19 | L'identité est structurée Nom/Postnom/Prénom ; le postnom est facultatif et jamais inventé ; affichage « Nom Postnom Prénom » | `person-name.ts` (§4.4) |
+| R20 | Les dates de parcours sont au mois et à l'année (`YYYY-MM`) ; le jour n'existe jamais ; la fin est ≥ au début | `period.ts`, `candidate-profile.ts` (§4.4) |
 
 ---
 

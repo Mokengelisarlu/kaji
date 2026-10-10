@@ -1,6 +1,8 @@
 import type {
+  ActivityType,
   AvailabilityType,
   ContractType,
+  EducationStatus,
   EffectiveAvailability,
   LanguageCode,
   LanguageLevel,
@@ -59,9 +61,13 @@ export type Experience = {
   readonly id: string;
   readonly title: string;
   readonly organization: string;
+  /** Nature de l'activité (emploi, stage, freelance, bénévolat…). */
+  readonly activityType?: ActivityType;
   readonly location?: string;
+  /** Début au format `YYYY-MM` (jamais de jour). */
   readonly startDate: string;
   readonly isCurrent: boolean;
+  /** Fin au format `YYYY-MM` ; absent si `isCurrent`. */
   readonly endDate?: string;
   readonly summary?: string;
   readonly achievements: readonly string[];
@@ -72,8 +78,11 @@ export type Education = {
   readonly diploma: string;
   readonly school: string;
   readonly field?: string;
-  readonly startYear?: number;
-  readonly endYear?: number;
+  /** Début au format `YYYY-MM` (ou `YYYY` si le mois est inconnu). */
+  readonly startDate?: string;
+  /** Fin au format `YYYY-MM` (ou `YYYY` si le mois est inconnu). */
+  readonly endDate?: string;
+  readonly status?: EducationStatus;
 };
 
 export type Skill = {
@@ -93,7 +102,9 @@ export type Certification = {
   readonly id: string;
   readonly name: string;
   readonly issuer: string;
-  readonly issuedYear?: number;
+  /** Date d'obtention au format `YYYY-MM` (ou `YYYY` si le mois est inconnu). */
+  readonly issuedAt?: string;
+  /** Date d'expiration au format `YYYY-MM`, si applicable. */
   readonly expiresAt?: string;
 };
 
