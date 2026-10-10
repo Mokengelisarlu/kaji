@@ -31,12 +31,14 @@ est annoncé honnêtement par `PlaceholderPage`.
 | `EC-05` | À propos | `/a-propos` | **Livré** | Contenu éditorial, `index: true` |
 | `EC-06` | Créer mon profil | `/candidats` | Placeholder | **Parcours candidat, étape 2** |
 | `EC-07` | Opportunités | `/opportunites` | **Livré** | Annonce l'absence d'opportunités, `noindex` |
-| `EC-08` | Entreprises | `/entreprise` | **Livré** | Entrée du parcours entreprise vers `EC-11` |
-| `EC-09` | Créer un compte entreprise | `/entreprise/inscription` | Placeholder | **Parcours entreprise, étape 2** |
-| `EC-10` | Mes demandes de recrutement | `/entreprise/demandes` | Placeholder | Espace authentifié |
+| `EC-08` | Entreprises | `/entreprise` | **Livré** | Entrée du parcours entreprise vers `EC-09` |
+| `EC-09` | Créer un compte entreprise | `/entreprise/inscription` | **Livré** | Sensible à l'authentification ; mène à `EC-14` |
+| `EC-10` | Mes demandes de recrutement | `/entreprise/demandes` | Placeholder | Espace authentifié, étape 5 |
 | `EC-11` | Contact / demande de profil | `/contact` | **Livré, livraison non branchée** | Formulaire validé ; transport absent |
 | `EC-12` | Mentions légales | `/mentions-legales` | **Livré, mentions incomplètes** | `index: true` ; 24 champs à renseigner |
 | `EC-13` | Politique de confidentialité | `/confidentialite` | **Livré** | `index: true` ; aligné sur le code réel |
+| `EC-14` | Onboarding entreprise | `/entreprise/onboarding` | **Livré** | Formulaire entreprise + rôle `EMPLOYER` attribué côté serveur |
+| `EC-15` | Tableau de bord entreprise | `/entreprise/dashboard` | **Livré** | Destination après inscription et après le formulaire ; résumé entreprise + dépôt de besoin |
 
 ### 60.2 Écrans non cartographiés
 
@@ -51,8 +53,8 @@ l'authentification :
 | Espace RH / admin | Vérification, arbitrage, matrice RBAC, journal d'audit, paramètres | Clerk + base + audit |
 
 Ces écrans seront cartographiés avec des identifiants `EC-14` et suivants au
-moment où l'authentification sera branchée. Les identifiants sont réservés, pas
-attribués.
+moment où l'authentification sera branchée. `EC-14` est déjà attribué
+(onboarding entreprise, §60.1) ; les espaces RH/admin restent réservés.
 
 ### 60.3 Navigation
 
@@ -61,24 +63,20 @@ Navigation principale, en-tête (`site-header-nav.tsx`, libellés dans `site.ts`
 | Libellé | Cible | Écran |
 |---|---|---|
 | Logo Kaji.com | `/` | `EC-01` |
-| Talents | `/talents` | `EC-02` |
-| Opportunités | `/opportunites` | `EC-07` |
-| Entreprises | `/entreprise` | `EC-08` |
 | À propos | `/a-propos` | `EC-05` |
 | Contact | `/contact` | `EC-11` |
-| **Je cherche un talent** (primaire) | `/entreprise/inscription` | `EC-09` |
-| **Créer mon profil** (primaire) | `/candidats` | `EC-06` |
 
-Les deux CTA primaires sont `PRIMARY_CTA.employer` (« Je cherche un talent » →
-`/entreprise/inscription`) et `PRIMARY_CTA.candidate` (« Créer mon profil » →
-`/candidats`) dans `src/lib/site.ts`. L'en-tête les utilise tous les deux, en
-mobile comme en bureau.
+Le menu est réduit à `PUBLIC_NAV` (« À propos », « Contact »). L'employeur et le
+candidat sont servis par les deux CTA du bloc droit, définis dans `src/lib/site.ts` :
+`PRIMARY_CTA.employer` (« Trouver un talent » → `/entreprise`) et
+`PRIMARY_CTA.candidate` (« Créer un profil » → `/inscription`). L'en-tête les
+affiche tous les deux, en mobile comme en bureau.
 
-Le hero de l'accueil utilise les deux également : action primaire « Découvrir le
-vivier » → `/talents`, secondaire « Je cherche un talent » →
-`PRIMARY_CTA.employer`, puis « Créer mon profil » → `PRIMARY_CTA.candidate` en
-lien. **L'entreprise reste avant le candidat**, conformément au §12, et l'accueil
-est cohérent avec l'en-tête.
+Le hero de l'accueil a deux entrées : action primaire « Créer un profil » →
+`PRIMARY_CTA.candidate` (`/inscription`), secondaire « Trouver un talent » →
+`PRIMARY_CTA.employer` (`/entreprise`). Pour un visiteur anonyme, on convertit le
+profil d'abord ; l'entreprise est orientée juste après, vers une destination qui
+dit ce qu'elle recevra (§64.2).
 
 Il n'existe plus de composant `CtaSection` : il a été supprimé avec la refonte
 (`06-progress-tracker.md` §5 écart 8).
@@ -122,7 +120,7 @@ Six blocs, dans cet ordre. La page est entièrement statique et prérendue.
 
 | # | Bloc | Contenu |
 |---|---|---|
-| 1 | Hero | Badge « Vérification · Médiation · Mise en relation », H1 « Votre talent mérite les bonnes opportunités. », paragraphe, trois entrées — primaire « Découvrir le vivier » → `/talents`, secondaire « Je cherche un talent » → `PRIMARY_CTA.employer`, lien « Créer mon profil » → `PRIMARY_CTA.candidate` —, trois indicateurs calculés, image `@/assets/hero01.png` avec annotation manuscrite en SVG |
+| 1 | Hero | Badge « Vérification · Médiation · Mise en relation », H1 « Votre talent mérite les bonnes opportunités. », paragraphe, deux entrées — primaire « Créer un profil » → `PRIMARY_CTA.candidate`, secondaire « Trouver un talent » → `/entreprise` —, trois indicateurs calculés, image `@/assets/hero01.png` avec annotation manuscrite en SVG |
 | 2 | « Notre plateforme » | `lg:grid-cols-[0.95fr_1.05fr]` : image `@/assets/section2.jpeg` à gauche, à droite `SectionHeading` « Un vivier encadré, pas une diffusion de masse » et une liste de 4 engagements (`Profils vérifiés`, `Disponibilités confirmées`, `Accompagnement humain`, `Données protégées`) |
 | 3 | « Comment ça marche » | `SectionHeading` « Un parcours encadré, du besoin au placement » puis `<ol>` de 4 étapes (`MEDIATION_STEPS`) : Décrire le besoin → Analyser et qualifier → Arbitrer une shortlist → Présenter et organiser. Chaque étape renvoie à une étape de §18.2 |
 | 4 | « Parcourez le vivier » | `lg:grid-cols-[minmax(15rem,0.8fr)_minmax(0,2.2fr)]` : `SectionHeading` + bouton « Explorer tout le vivier » → `/talents`, puis 4 cartes de catégories illustrées (webp) vers `/talents?category=<slug>` |
@@ -157,10 +155,12 @@ contredirait cet engagement sur la même page.
 ### 61.4 Règles
 
 - **Une seule action primaire par bloc.** Le hero et le bloc 3 sont primaries ;
-  les blocs 5 et 6 sont secondaires. Le hero porte trois entrées mais une seule
+  les blocs 5 et 6 sont secondaires. Le hero porte deux entrées mais une seule
   primaire : c'est la contrainte de `04` §40.4, pas une décoration.
-- **L'ordre des entrées est entreprise avant candidat** (§12). Le hero respecte
-  cet ordre : vivier, puis « Je cherche un talent », puis « Créer mon profil ».
+- **L'ordre des entrées de l'accueil est candidat avant entreprise** : primaire
+  « Créer un profil » (`PRIMARY_CTA.candidate`), secondaire « Trouver un talent »
+  (`/entreprise`). Pour un visiteur anonyme, on convertit d'abord le profil ; la
+  destination entreprise reste une page réelle, pas une promesse vide.
 - **Toute promesse de la page doit renvoyer à une exigence de
   `02-product-vision.md` ou à une fonctionnalité existante.** C'est la règle qui
   a éliminé « Apprendre · Se former » et « un écosystème complet » : ni
@@ -370,21 +370,23 @@ actions : parcourir les talents, revenir à l'accueil.
 
 `/a-propos`, `/entreprise`, `/opportunites`. Contenu éditorial : la
 démonstration du modèle, le refus du vocabulaire « marketplace », les
-catégories d'opportunités. En `PlaceholderPage` aujourd'hui.
+catégories d'opportunités. Les trois pages sont livrées (voir §60.1) ; elles
+étaient en `PlaceholderPage` avant leur livraison.
 
-`/entreprise` est la **page d'entrée du parcours entreprise** : elle doit
-expliquer le modèle et refuser le vocabulaire « marketplace ». L'écart est
-assumé : la règle est écrite, l'écran qui devrait l'appliquer n'existe pas.
+`/entreprise` est la **page d'entrée du parcours entreprise** : elle explique
+le modèle, refuse le vocabulaire « marketplace », et son CTA de création de
+compte devient « Mon espace entreprise » quand l'utilisateur est déjà employeur.
 
-### 64.3 EC-06, EC-09 — Création de compte et de profil
+### 64.3 EC-06, EC-09, EC-14 — Création de compte et de profil
 
-Points d'entrée des deux parcours. Aucun des deux n'est construit, et aucun ne
-peut l'être sans Clerk.
+Points d'entrée des deux parcours, tous deux appuyés sur Clerk.
 
-| Écran | Parcours | Contenu attendu |
+| Écran | Parcours | État |
 |---|---|---|
-| `EC-06` | Candidat, étape 2 | Création de compte puis formulaire de profil : identité, métier, compétences, langues, expérience, formation, visibilité |
-| `EC-09` | Entreprise, étape 2 | Création de compte puis déclaration de société |
+| `EC-06` / `/candidats` | Candidat, étape 2 | Inscription `/inscription` livrée ; `/candidats` reste un placeholder, l'onboarding candidat complète la fiche directement |
+| `EC-09` | Entreprise, étape 2 | **Livré** — `/entreprise/inscription`, sensible à l'état d'authentification |
+| `EC-14` | Entreprise, étape 3 | **Livré** — `/entreprise/onboarding` : formulaire entreprise + rôle `EMPLOYER` attribué côté serveur |
+| `EC-15` | Entreprise, étape 4 | **Livré** — `/entreprise/dashboard` : destination après l'inscription et après le formulaire ; résume l'entreprise et pointe vers le dépôt de besoin (`EC-11`) |
 
 Point critique du formulaire candidat : le choix de visibilité
 (`PUBLIC` / `ON_REQUEST` / `PRIVATE`) doit être explicite et compréhensible. Le
@@ -422,9 +424,9 @@ profil », rattacher la demande au bon `candidateId`, et afficher le nom du prof
 concerné. C'est le seul endroit du site où une URL porte un identifiant métier,
 et c'est justifié : c'est une demande, pas une navigation.
 
-À noter : les deux CTA primaires de l'en-tête et de l'accueil ne mènent **pas**
-ici mais à `/entreprise/inscription` et `/candidats`, tous deux placeholders
-également. Les trois CTA principaux du site mènent donc à des pages vides.
+À noter : les CTA primaires ne menaient pas ici mais à `/entreprise/inscription`
+et `/candidats`. `/entreprise/inscription` est désormais livré (`EC-09`, §65).
+`/candidats` reste un placeholder.
 
 Contenu attendu :
 
@@ -467,20 +469,25 @@ conforme.
 
 ## §65 — Parcours
 
-### 65.1 PA-01 — Découverte entreprise (partiellement construit)
+### 65.1 PA-01 — Découverte entreprise (construite jusqu'au compte)
 
 Deux variantes, parce que l'interface en propose deux.
 
-**Par le CTA primaire** — c'est le chemin principal, celui qu'un visiteur
-d'entreprise suit spontanément :
+**Par le CTA employer** — c'est le chemin d'un visiteur d'entreprise :
 
 ```
-EC-01 /                        « Je cherche un talent » (primaire)
+EC-01 /                            « Trouver un talent » (secondaire)
       ↓
-EC-09 /entreprise/inscription  Créer un compte entreprise   ← BLOQUÉ
+EC-08 /entreprise                  Comprendre le modèle
+      ↓
+EC-09 /entreprise/inscription      Créer un compte entreprise   ✔ livré
+      ↓
+EC-14 /entreprise/onboarding       Formulaire entreprise        ✔ livré
+      ↓
+EC-15 /entreprise/dashboard        Tableau de bord              ✔ livré
 ```
 
-**Par la découverte** — le chemin qu'un visiteur prend s'il veut d'abord voir :
+**Par la découverte** — le chemin d'un visiteur qui veut d'abord voir :
 
 ```
 EC-08 /entreprise          Comprendre le modèle
@@ -495,32 +502,38 @@ EC-11 /contact?objet=…     Demander ce profil        ← formulaire livré
 ```
 
 Le second chemin va plus loin : l'entreprise peut lire, décider qu'un profil
-l'intéresse et le demander. Le formulaire est désormais construit et
-pré-rempli ; il s'arrête là où commence l'étape 5, faute de transport.
+l'intéresse et le demander. Le formulaire est construit et pré-rempli ; il
+s'arrête là où commence le transport (étape 5).
 
 **Depuis l'accueil**, l'entreprise dispose de sa propre entrée : le hero porte
-« Je cherche un talent » en secondaire, avant « Créer mon profil ». L'accueil et
-l'en-tête sont donc cohérents, et l'ordre du §12 est respecté des deux côtés.
+« Trouver un talent » en secondaire, après « Créer un profil ».
 
-**Aucun des chemins ne va au bout.** C'est la conversion perdue : les deux
-s'arrêtent sur des pages vides.
+**Le compte va au bout** : `EC-09` crée — ou réoriente — le compte selon l'état
+d'authentification (un candidat existant n'est jamais converti, on lui demande de
+se connecter avec un compte entreprise), `EC-14` enregistre l'entreprise puis
+attribue le rôle `EMPLOYER`, et l'utilisateur retombe sur `EC-15`, le tableau de
+bord. Ce qui manque encore : le registre des besoins déposés dans l'espace
+(`EC-10`, `/entreprise/demandes`).
 
-### 65.2 PA-02 — Découverte candidat (partiellement construit)
+### 65.2 PA-02 — Découverte candidat (construit)
 
 ```
 EC-01 /              Comprendre le produit, section candidat
       ↓
-EC-06 /candidats     « Créer mon profil » (primaire)   ← BLOQUÉ
+/inscription         « Créer un profil » (primaire)   ✔ livré
+      ↓
+[Espace candidat]    Onboarding 10 étapes (livré)
 ```
 
 Variante indirecte : `EC-02` → `EC-03` pour voir des profils du même métier, puis
-retour au CTA. S'arrête dans les deux cas à `EC-06`.
+retour au CTA. Le parcours candidat va au bout : l'onboarding est livré, il
+complète la fiche et choisit sa visibilité.
 
 **Écart notable** : un candidat est incité à créer un compte depuis l'accueil
 alors que le seul contenu qui le concerne — des profils de son métier — est
-déjà public et gratuit. `EC-06` doit donc expliquer ce que le compte apporte
-avant de le demander, sinon l'étape est une friction sans contrepartie (voir
-§65.6).
+déjà public et gratuit. La page d'inscription `/inscription` doit donc expliquer
+ce que le compte apporte avant de le demander, sinon l'étape est une friction
+sans contrepartie (voir §65.6).
 
 ### 65.3 PA-03 — Recrutement complet (spécifié, non construit)
 
@@ -550,9 +563,9 @@ EC-03 /talents/:id   Fiche publique (déjà construite)
 [Espace RH] Formalisation, placement
 ```
 
-**Aucun écran de cet espace n'existe.** Seuls `EC-03` et `EC-11` sont communs.
-Ce parcours est spécifié dans `02-product-vision.md` §17 et entièrement non
-construit.
+**Seul le compte est construit** (`EC-09` + `EC-14`). Le dépôt de besoin, les
+espaces RH et le reste du parcours sont spécifiés dans `02-product-vision.md`
+§17 et entièrement non construits.
 
 ### 65.4 PA-04 — Vie du profil candidat (spécifié, non construit)
 
@@ -576,8 +589,8 @@ construit.
 
 | Rupture | Effet | Priorité |
 |---|---|---|
-| `EC-09` est un placeholder | « Je cherche un talent », entrée principale de l'entreprise sur l'accueil et dans l'en-tête, mène à une page vide | **Critique** |
-| Pas d'authentification | `EC-06`, `EC-09`, `EC-10` non constructibles | Critique |
+| `EC-10` demandes en placeholder | Le dépôt de besoins et son suivi n'existent pas encore | **Critique** (périmètre étape 5) |
+| Pas d'authentification | `EC-10` non constructible | Critique |
 | Pas de persistance | Aucune écriture possible | Critique |
 | `EC-11` sans transport | Le formulaire est là, mais la demande n'atteint personne. La page l'affiche ; l'étape 5 doit fournir la persistance et le canal | **Critique** |
 | `EC-12` mentions incomplètes | Page rédigée et indexable, mais non conforme : 24 mentions obligatoires manquent | Élevé |
@@ -587,11 +600,13 @@ construit.
 
 Résolues depuis la dernière révision : `EC-11` n'est plus un placeholder, son
 pré-remplissage fonctionne (objet, `candidateId` et nom du profil sont
-affichés), et `EC-12` / `EC-13` sont rédigées et indexables.
+affichés), `EC-12` / `EC-13` sont rédigées et indexables, et le compte
+entreprise (`EC-09`, `EC-14`) est livré avec la table `companies` et
+l'attribution du rôle `EMPLOYER`.
 
-Les cinq premières lignes sont celles qui empêchent encore le site de
-fonctionner. Trois dépendent de l'étape 5 — authentification, persistance,
-transport — et une dépend de l'opérateur : les mentions légales.
+Les quatre premières lignes sont celles qui empêchent encore le site de
+fonctionner. Trois dépendent de l'étape 5 — persistance du dépôt, transport —
+et une dépend de l'opérateur : les mentions légales.
 
 Le vide indistingué dans `EC-02` a également été traité (étape 3).
 

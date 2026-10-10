@@ -132,20 +132,14 @@ export default async function HomePage() {
 
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
               <Button asChild size="lg">
-                <Link href="/talents">
-                  Découvrir le vivier
+                <Link href={PRIMARY_CTA.candidate.href}>
+                  Créer un profil
                   <ArrowRight aria-hidden="true" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link href={PRIMARY_CTA.employer.href}>{PRIMARY_CTA.employer.label}</Link>
+                <Link href="/entreprise">Trouver un talent</Link>
               </Button>
-              <Link
-                href={PRIMARY_CTA.candidate.href}
-                className="text-primary hover:text-primary-hover text-sm font-medium underline underline-offset-4 sm:ml-1"
-              >
-                {PRIMARY_CTA.candidate.label}
-              </Link>
             </div>
 
             <dl className="border-border text-muted-foreground mt-3 grid w-full max-w-lg grid-cols-3 gap-3 border-t pt-5 text-sm">

@@ -22,6 +22,9 @@ export const languageCodeEnum = pgEnum("language_code", [
 export const languageLevelEnum = pgEnum("language_level", [
   "NATIVE", "PROFESSIONAL", "INTERMEDIATE", "BASIC"
 ]);
+export const companySizeEnum = pgEnum("company_size", [
+  "MICRO", "SMALL", "MEDIUM", "LARGE"
+]);
 
 export const candidateProfiles = pgTable("candidate_profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -55,6 +58,32 @@ export const candidateProfiles = pgTable("candidate_profiles", {
   education: jsonb("education").$type<Array<Education>>().notNull().default([]),
   certifications: jsonb("certifications").$type<Array<Certification>>().notNull().default([]),
   profileVisibility: profileVisibilityEnum("profile_visibility").notNull().default("PUBLIC"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+/**
+ * Entreprises (comptes employeurs).
+ *
+ * Un compte employeur (`clerkUserId` unique) possède au plus une entreprise.
+ * Les informations déclarées ici sont administratives : elles servent à la
+ * vérification par l'équipe, pas à la publication. Aucune donnée n'est publique.
+ */
+export const companies = pgTable("companies", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  ownerClerkUserId: varchar("owner_clerk_user_id", { length: 255 }).notNull().unique(),
+  name: varchar("name", { length: 255 }).notNull(),
+  legalName: varchar("legal_name", { length: 255 }),
+  sector: varchar("sector", { length: 150 }).notNull(),
+  size: companySizeEnum("size").notNull(),
+  city: varchar("city", { length: 150 }).notNull(),
+  country: varchar("country", { length: 150 }).notNull(),
+  website: varchar("website", { length: 255 }),
+  contactName: varchar("contact_name", { length: 255 }).notNull(),
+  contactEmail: varchar("contact_email", { length: 255 }).notNull(),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  description: text("description").notNull(),
+  isVerified: boolean("is_verified").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

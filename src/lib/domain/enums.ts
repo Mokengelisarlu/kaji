@@ -466,6 +466,27 @@ export const PROFILE_VISIBILITY_LABEL = {
 } as const satisfies Record<ProfileVisibility, string>;
 
 /* ------------------------------------------------------------------ */
+/* Entreprises (§6)                                                   */
+/* ------------------------------------------------------------------ */
+
+/** Taille de l'entreprise, exprimée en effectif salarié. */
+export const COMPANY_SIZE = {
+  MICRO: "MICRO",
+  SMALL: "SMALL",
+  MEDIUM: "MEDIUM",
+  LARGE: "LARGE",
+} as const;
+
+export type CompanySize = (typeof COMPANY_SIZE)[keyof typeof COMPANY_SIZE];
+
+export const COMPANY_SIZE_LABEL = {
+  MICRO: "1 à 9 salariés",
+  SMALL: "10 à 49 salariés",
+  MEDIUM: "50 à 249 salariés",
+  LARGE: "250 salariés et plus",
+} as const satisfies Record<CompanySize, string>;
+
+/* ------------------------------------------------------------------ */
 /* Rôles (§20)                                                        */
 /* ------------------------------------------------------------------ */
 

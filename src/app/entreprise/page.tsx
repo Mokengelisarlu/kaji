@@ -8,7 +8,13 @@ import {
   type ProseSection,
 } from "@/components/ui/content-page";
 import { Button } from "@/components/ui/button";
-import { Container, Section } from "@/components/ui/layout";
+import { Container } from "@/components/ui/layout";
+import {
+  EMPLOYER_DASHBOARD_PATH,
+  EMPLOYER_SIGNUP_PATH,
+  isEmployer,
+} from "@/lib/auth/employer";
+import { getSession } from "@/lib/auth/session";
 import { getFeaturedTalents, getTalentPoolStats } from "@/lib/use-cases/talent";
 import { BRAND } from "@/lib/site";
 
@@ -112,10 +118,13 @@ const SECTIONS: readonly ProseSection[] = [
 ];
 
 export default async function BusinessesPage() {
-  const [featuredTalents, poolStats] = await Promise.all([
+  const [featuredTalents, poolStats, session] = await Promise.all([
     getFeaturedTalents(3),
     getTalentPoolStats(),
+    getSession(),
   ]);
+
+  const employerConnected = session !== null && isEmployer(session.role);
 
   return (
     <>
@@ -145,13 +154,13 @@ export default async function BusinessesPage() {
 
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
               <Button asChild size="lg">
-                <Link href="/inscription">
-                  Créer un compte
+                <Link href={employerConnected ? EMPLOYER_DASHBOARD_PATH : EMPLOYER_SIGNUP_PATH}>
+                  {employerConnected ? "Mon espace entreprise" : "Créer un compte"}
                   <ArrowRight aria-hidden="true" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link href="/talents">Parcourir le vivier</Link>
+                <Link href="/contact?objet=besoin">Déposer un besoin</Link>
               </Button>
             </div>
 
@@ -181,27 +190,6 @@ export default async function BusinessesPage() {
           <TalentSlider talents={featuredTalents} />
         </Container>
       </section>
-
-      <Section spacing="md">
-        <Container size="narrow">
-          <div className="border-border bg-muted/40 flex flex-col gap-4 rounded-xl border p-6 sm:p-8">
-            <h2 className="text-lg font-semibold">Commencer par décrire votre besoin</h2>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Le formulaire indique le métier, les compétences, la localisation, le
-              type de contrat et l’échéance. Un médiateur vous répond sous 48 heures
-              ouvrées.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link href="/contact?objet=besoin">Déposer un besoin</Link>
-              </Button>
-              <Button asChild variant="secondary">
-                <Link href="/talents">Parcourir le vivier d’abord</Link>
-              </Button>
-            </div>
-          </div>
-        </Container>
-      </Section>
 
       <ProseBody sections={SECTIONS} />
     </>

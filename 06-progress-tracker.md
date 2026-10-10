@@ -85,9 +85,10 @@ Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non c
 - [x] **M7 — Pages légales et institutionnelles** — *partiellement livré*
   Livré : `/mentions-legales`, `/confidentialite` (en `index: true`),
   `/a-propos`, `/entreprise`, `/opportunites`.
-  Restent en `PlaceholderPage` : `/candidats`, `/entreprise/inscription`,
-  `/entreprise/demandes` — les deux derniers supposent l'authentification et la
-  persistance de l'étape 5, pas une rédaction.
+  Restent en `PlaceholderPage` : `/candidats`, `/entreprise/demandes`.
+  `/entreprise/demandes` suppose la persistance des demandes (étape 5), pas une
+  rédaction. `/entreprise/inscription` n'est plus un placeholder : voir les
+  espaces authentifiés ci-dessous.
   Les mentions obligatoires sont **rendues visibles comme manquantes** via
   `src/lib/legal.ts` (24 champs « à compléter »), et non inventées : siège,
   RCCM, capital, directeur de publication, contacts, hébergeur. La page est
@@ -108,12 +109,12 @@ Statuts : `[x]` livré et vérifié · `[~]` partiellement livré · `[ ]` non c
 
 ### Phase 3 — Hors MVP, spécifié non implémenté
 
-- [~] Espaces authentifiés — *espace candidat livré, entreprise/RH/admin non commencés*
+- [~] Espaces authentifiés — *espace candidat livré ; **onboarding entreprise livré*** (`/entreprise/inscription` sensible à l'état, `/entreprise/onboarding`, tableau de bord `/entreprise/dashboard`, table `companies`, rôle `EMPLOYER` attribué via Clerk après dépôt) ; espaces RH/admin non commencés
 - [ ] Workflow de recrutement (§17) et registre des demandes
 - [ ] Opportunités publiées
 - [ ] Documents et pièces justificatives
 - [ ] Notifications (e-mail, in-app)
-- [x] Persistance (Neon + Drizzle) — schéma, migrations `0001`–`0003` appliquées, `DrizzleTalentRepository` actif
+- [x] Persistance (Neon + Drizzle) — schéma, migrations `0001`–`0004` appliquées, `DrizzleTalentRepository` actif
 - [x] Authentification (Clerk) — session serveur + rôles issus des *claims*, RBAC branché
 
 ---
@@ -146,8 +147,9 @@ réelle dans le code.
 | R19 | Identité structurée Nom/Postnom/Prénom, postnom facultatif, affichage « Nom Postnom Prénom » | `person-name.ts`, `schema.ts` (`last_name`/`post_name`/`first_name`), formulaires onboarding & édition | `[x]` |
 | R20 | Dates de parcours au mois et à l'année, jamais de jour, fin ≥ début | `period.ts`, `candidate-profile.ts` (validation), formulaires | `[x]` |
 | R21 | Inscription candidat guidée en 10 étapes, brouillon local restauré, retour automatique à l'étape en erreur | `src/app/candidat/onboarding/candidate-profile-form.tsx`, `candidate-profile-draft.ts` | `[x]` |
+| R22 | Un compte ne change jamais de nature : un candidat existant n'est pas converti en entreprise, et le rôle `EMPLOYER` n'est attribué qu'après dépôt réussi du formulaire entreprise, côté serveur | `auth/employer.ts` (`requireEmployerOnboarding`, `setEmployerRole`), `app/entreprise/onboarding/actions.ts` | `[x]` |
 
-**19 exigences livrées, 0 partiellement, 2 non commencées.** Les 2 « non commencées »
+**20 exigences livrées, 0 partiellement, 2 non commencées.** Les 2 « non commencées »
 (R17, R18) ne sont pas des bugs : ce sont des étapes non faites, et elles sont
 nommées ici plutôt que laissées en attente.
 
@@ -159,8 +161,8 @@ Repris de `03-system-architecture.md` §39.5, avec le statut réel.
 
 | Risque | Gravité | Statut | Condition de levée |
 |---|---|---|---|
-| Aucune authentification | **Bloquant production** | Partiellement traité | Session serveur + RBAC branchés sur les actions candidat ; attribution des rôles (métadonnée Clerk) et espaces entreprise/RH/admin restants |
-| Aucune persistance | **Bloquant production** | Traité | Neon + Drizzle actifs (`DrizzleTalentRepository`), migrations `0001`–`0003` appliquées |
+| Aucune authentification | **Bloquant production** | Partiellement traité | Session serveur + RBAC branchés ; rôle `EMPLOYER` attribuable via l'onboarding entreprise (`setEmployerRole`) ; restent espaces RH/admin et attribution des autres rôles |
+| Aucune persistance | **Bloquant production** | Traité | Neon + Drizzle actifs (`DrizzleTalentRepository`), migrations `0001`–`0004` appliquées |
 | Aucun test | Élevé | Traité | 198 tests Vitest, intégrés à `pnpm check` |
 | Aucun rate limiting | Élevé | Non traité | Limiteur sur les routes d'écriture et les formulaires |
 | Aucun en-tête CSP | Moyen | Non traité | CSP + `nosniff` + `DENY` en production |
@@ -316,8 +318,10 @@ un état valide.
 
 14. ~~Clerk : intégration, session, `proxy.ts`, branchement de la matrice RBAC.~~
     **Fait (partiel)** — session serveur (`auth/session.ts`), rôles (`auth/role.ts`),
-    gardes (`auth/guard.ts`) et branchement RBAC des actions candidat. Restent :
-    attribution des rôles via la métadonnée Clerk et espaces entreprise/RH/admin.
+    gardes (`auth/guard.ts`), branchement RBAC des actions candidat, et attribution
+    du rôle `EMPLOYER` via la métadonnée Clerk (`auth/employer.ts`) au terme de
+    l'onboarding entreprise. Restent : attribution des autres rôles et espaces
+    RH/admin.
 15. ~~Neon + Drizzle : schéma, migrations, `DrizzleTalentRepository`, bascule dans
     `repositories/index.ts`.~~ **Fait.**
 16. `audit_event` + rate limiting + en-têtes CSP.

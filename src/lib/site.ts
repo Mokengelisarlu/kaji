@@ -31,9 +31,6 @@ export type NavSection = {
 };
 
 export const PUBLIC_NAV: readonly NavLink[] = [
-  { href: "/talents", label: "Talents" },
-  { href: "/opportunites", label: "Opportunités" },
-  { href: "/entreprise", label: "Entreprises" },
   { href: "/a-propos", label: "À propos" },
   { href: "/contact", label: "Contact" },
 ];
@@ -74,6 +71,6 @@ export const LEGAL_NAV: readonly NavLink[] = [
 
 /** Cibles principales de conversion, partagées par le header et les sections CTA. */
 export const PRIMARY_CTA = {
-  employer: { href: "/entreprise/inscription", label: "Je cherche un talent" },
-  candidate: { href: "/inscription", label: "Créer mon profil" },
+  employer: { href: "/entreprise", label: "Trouver un talent" },
+  candidate: { href: "/inscription", label: "Créer un profil" },
 } as const;
